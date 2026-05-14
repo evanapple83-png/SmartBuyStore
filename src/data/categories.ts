@@ -1,0 +1,42 @@
+export const categories = [
+  {
+    slug: 'koelkasten',
+    name: 'Koelkasten',
+    description: 'Koel-vriescombinaties, vrijstaand & inbouw',
+    image: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=600&q=80',
+    icon: 'refrigerator',
+    productCount: 6,
+  },
+  {
+    slug: 'wasmachines',
+    name: 'Wasmachines',
+    description: 'Voorladers, bovenladers & wasdroogcombinaties',
+    image: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=600&q=80',
+    icon: 'washing-machine',
+    productCount: 1,
+  },
+  {
+    slug: 'vaatwassers',
+    name: 'Vaatwassers',
+    description: 'Vrijstaand, semi- en volledig geïntegreerd',
+    image: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&q=80',
+    icon: 'dishwasher',
+    productCount: 1,
+  },
+  {
+    slug: 'koken',
+    name: 'Koken & Bakken',
+    description: 'Fornuizen, ovens, kookplaten & afzuigkappen',
+    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80',
+    icon: 'cooking',
+    productCount: 0,
+  },
+  {
+    slug: 'drogers',
+    name: 'Drogers',
+    description: 'Condensdrogers, warmtepompdrogers',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+    icon: 'dryer',
+    productCount: 0,
+  },
+];
