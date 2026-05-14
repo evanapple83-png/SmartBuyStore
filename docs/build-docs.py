@@ -221,6 +221,12 @@ PHASE_META = {
         'lede': 'Volledige beschrijving van alle admin- en klantaccount-schermen, met velden, knoppen, waarschuwingen en foutpreventies per scherm.',
         'fase_num': '03 van 10',
     },
+    'FASE-4': {
+        'eyebrow': 'Fase 4 · Implementatiebasis',
+        'title': 'De <em>fundering</em>: auth, rollen, layouts.',
+        'lede': 'Source veilig in git, Supabase auth + RLS opgezet, route-protection via middleware, en de skelet-layouts voor admin én klantaccount klaar voor de volgende fases.',
+        'fase_num': '04 van 10',
+    },
 }
 
 def build_pdf(md_path):

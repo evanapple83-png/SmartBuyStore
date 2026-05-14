@@ -1,8 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { USPBar } from '@/components/layout/USPBar';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Smart Buy Store — Witgoed Specialist | Gratis installatie & zelfde dag bezorging',
@@ -13,12 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="nl">
-      <body className="min-h-screen flex flex-col">
-        <USPBar />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+      <body className="min-h-screen flex flex-col">{children}</body>
     </html>
   );
 }
