@@ -233,6 +233,12 @@ PHASE_META = {
         'lede': 'Productcatalogus volledig in Supabase. Admin-CRUD voor producten, categorieën en klanten met soft-delete en foutpreventies. Public pages lezen direct uit DB met ISR — wijzigingen verschijnen binnen 60s.',
         'fase_num': '05 van 10',
     },
+    'FASE-6': {
+        'eyebrow': 'Fase 6 · Bestellingen en klantaccounts',
+        'title': 'Van winkelmand naar <em>besteld</em>.',
+        'lede': 'End-to-end orderflow: cart, checkout met postcode-check, bestellingbeheer voor admin, klant-bestellingen met automatische guest-claim, statuslogboek en defensieve transitie-regels. Mollie volgt in FASE 7.',
+        'fase_num': '06 van 10',
+    },
 }
 
 def build_pdf(md_path):
