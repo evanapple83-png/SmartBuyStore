@@ -227,6 +227,12 @@ PHASE_META = {
         'lede': 'Source veilig in git, Supabase auth + RLS opgezet, route-protection via middleware, en de skelet-layouts voor admin én klantaccount klaar voor de volgende fases.',
         'fase_num': '04 van 10',
     },
+    'FASE-5': {
+        'eyebrow': 'Fase 5 · Producten, categorieën, klanten',
+        'title': 'Catalog uit <em>Supabase</em>, admin beheert, site leeft.',
+        'lede': 'Productcatalogus volledig in Supabase. Admin-CRUD voor producten, categorieën en klanten met soft-delete en foutpreventies. Public pages lezen direct uit DB met ISR — wijzigingen verschijnen binnen 60s.',
+        'fase_num': '05 van 10',
+    },
 }
 
 def build_pdf(md_path):
