@@ -41,7 +41,10 @@ export async function getAllOrdersForAdmin(opts?: { status?: OrderStatus; limit?
   if (opts?.status) q = q.eq('status', opts.status);
   if (opts?.limit) q = q.limit(opts.limit);
   const { data, error } = await q;
-  if (error) throw error;
+  if (error) {
+    console.warn('getAllOrdersForAdmin: falling back to []', error.message);
+    return [] as DbOrder[];
+  }
   return (data ?? []) as DbOrder[];
 }
 
@@ -95,29 +98,39 @@ export async function getAdminDashboardStats() {
   const today = new Date().toISOString().slice(0, 10);
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [newToday, deliverToday, paidToday, unpaidOld] = await Promise.all([
-    supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
-      .gte('created_at', today),
-    supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
-      .eq('delivery_date', today)
-      .in('status', ['paid', 'in_progress', 'planned_delivery']),
-    supabase.from('sbs_orders').select('total_incl_btw,subtotal_excl_btw')
-      .eq('status', 'paid')
-      .gte('paid_at', today),
-    supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
-      .eq('status', 'pending_payment')
-      .lt('created_at', dayAgo),
-  ]);
+  // Defensief: ontbrekende tabel mag dashboard niet crashen
+  try {
+    const [newToday, deliverToday, paidToday, unpaidOld] = await Promise.all([
+      supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
+        .gte('created_at', today),
+      supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
+        .eq('delivery_date', today)
+        .in('status', ['paid', 'in_progress', 'planned_delivery']),
+      supabase.from('sbs_orders').select('total_incl_btw,subtotal_excl_btw')
+        .eq('status', 'paid')
+        .gte('paid_at', today),
+      supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
+        .eq('status', 'pending_payment')
+        .lt('created_at', dayAgo),
+    ]);
 
-  const revenueExclToday = (paidToday.data ?? []).reduce(
-    (sum, r: any) => sum + Number(r.subtotal_excl_btw || 0),
-    0
-  );
+    if (newToday.error || deliverToday.error || paidToday.error || unpaidOld.error) {
+      throw newToday.error || deliverToday.error || paidToday.error || unpaidOld.error;
+    }
 
-  return {
-    newOrdersToday: newToday.count || 0,
-    deliveriesToday: deliverToday.count || 0,
-    revenueExclToday,
-    unpaidOver24h: unpaidOld.count || 0,
-  };
+    const revenueExclToday = (paidToday.data ?? []).reduce(
+      (sum, r: any) => sum + Number(r.subtotal_excl_btw || 0),
+      0
+    );
+
+    return {
+      newOrdersToday: newToday.count || 0,
+      deliveriesToday: deliverToday.count || 0,
+      revenueExclToday,
+      unpaidOver24h: unpaidOld.count || 0,
+    };
+  } catch (err) {
+    console.warn('Dashboard stats fallback (tabel ontbreekt of niet bereikbaar):', err);
+    return { newOrdersToday: 0, deliveriesToday: 0, revenueExclToday: 0, unpaidOver24h: 0 };
+  }
 }
