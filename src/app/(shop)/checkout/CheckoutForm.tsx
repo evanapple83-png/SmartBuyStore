@@ -100,7 +100,15 @@ export function CheckoutForm({ prefill }: Props) {
         setError(result.error);
         return;
       }
-      // Wis cart en redirect naar bevestigingspagina
+
+      if (result.checkoutUrl) {
+        // Mollie is actief → stuur klant naar Mollie checkout.
+        // Cart wissen we PAS op /checkout/return na bevestigde betaling.
+        window.location.href = result.checkoutUrl;
+        return;
+      }
+
+      // Mollie nog niet geconfigureerd (dev / vóór go-live): direct naar bevestiging.
       try { localStorage.removeItem('sbs_cart'); } catch {}
       router.push(`/checkout/bevestiging?order=${encodeURIComponent(result.orderNumber)}`);
     });

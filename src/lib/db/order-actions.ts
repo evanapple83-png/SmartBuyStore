@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
+import { getMollieClient, isMollieConfigured, getRedirectUrl, getWebhookUrl } from '@/lib/mollie/client';
 import type { OrderStatus } from './orders';
 
 const BTW_RATE = 21;
@@ -54,7 +55,7 @@ export type CheckoutInput = {
 };
 
 export type CreateOrderResult =
-  | { ok: true; orderId: string; orderNumber: string }
+  | { ok: true; orderId: string; orderNumber: string; checkoutUrl: string | null }
   | { ok: false; error: string };
 
 export async function createOrder(input: CheckoutInput): Promise<CreateOrderResult> {
@@ -155,7 +156,48 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
     return { ok: false, error: 'Bestelregels konden niet worden opgeslagen.' };
   }
 
-  return { ok: true, orderId: order.id, orderNumber: order.order_number };
+  // Mollie payment aanmaken (alleen als geconfigureerd)
+  let checkoutUrl: string | null = null;
+  if (isMollieConfigured()) {
+    try {
+      const mollie = getMollieClient();
+      const payment = await mollie.payments.create({
+        amount: { currency: 'EUR', value: total_incl_btw.toFixed(2) },
+        description: `Smart Buy Store bestelling ${order.order_number}`,
+        redirectUrl: getRedirectUrl(order.order_number),
+        webhookUrl: getWebhookUrl(),
+        metadata: { order_id: order.id, order_number: order.order_number },
+      });
+
+      checkoutUrl = payment._links?.checkout?.href ?? null;
+
+      // Sla payment-poging op (server-side bron-van-waarheid)
+      await admin.from('sbs_payments').insert({
+        order_id: order.id,
+        mollie_payment_id: payment.id,
+        status: payment.status,
+        amount: total_incl_btw,
+        method: payment.method ?? null,
+        checkout_url: checkoutUrl,
+        raw: payment as any,
+      });
+    } catch (err: any) {
+      console.error('Mollie payment create error:', err?.message || err);
+      // De order blijft staan met status pending_payment.
+      // De klant ziet een nette foutmelding; admin kan handmatig (TEST) of opnieuw initiëren.
+      return {
+        ok: false,
+        error: 'Online betaling kon niet worden gestart. Probeer het opnieuw of neem contact op.',
+      };
+    }
+  }
+
+  return {
+    ok: true,
+    orderId: order.id,
+    orderNumber: order.order_number,
+    checkoutUrl,
+  };
 }
 
 // ─── ADMIN: STATUS UPDATE ────────────────────────────────────────────────────
