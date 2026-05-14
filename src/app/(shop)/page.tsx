@@ -7,15 +7,21 @@ import { BrandScroller } from '@/components/home/BrandScroller';
 import { TrustSection } from '@/components/home/TrustSection';
 import { ReviewsSection } from '@/components/home/ReviewsSection';
 import { NewsletterSection } from '@/components/home/NewsletterSection';
+import { getVisibleProducts } from '@/lib/db/catalog';
+import { mapDbProducts } from '@/lib/db/product-mapper';
 
-export default function HomePage() {
+export const revalidate = 60; // ISR: ververs max elke minuut
+
+export default async function HomePage() {
+  const products = mapDbProducts(await getVisibleProducts());
+
   return (
     <>
       <HeroSection />
       <USPStrip />
-      <DealsBanner />
+      <DealsBanner products={products} />
       <CategoryGrid />
-      <ProductSection />
+      <ProductSection products={products} />
       <BrandScroller />
       <TrustSection />
       <ReviewsSection />

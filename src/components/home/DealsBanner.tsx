@@ -2,10 +2,10 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { ProductGrid } from '@/components/product/ProductGrid';
-import { getSaleProducts } from '@/data/products';
+import type { Product } from '@/types/product';
 
-export function DealsBanner() {
-  const saleProducts = getSaleProducts().slice(0, 4);
+export function DealsBanner({ products }: { products: Product[] }) {
+  const saleProducts = products.filter((p) => p.isOnSale).slice(0, 4);
 
   return (
     <section className="py-12 bg-background">

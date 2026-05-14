@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { products } from '@/data/products';
-import type { Category } from '@/types/product';
+import type { Category, Product } from '@/types/product';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { cn } from '@/lib/utils';
 
@@ -16,7 +15,7 @@ const tabs: { id: Tab; label: string }[] = [
   { id: 'vaatwassers', label: 'Vaatwassers' },
 ];
 
-export function ProductSection() {
+export function ProductSection({ products }: { products: Product[] }) {
   const [activeTab, setActiveTab] = useState<Tab>('trending');
 
   const filtered = activeTab === 'trending'

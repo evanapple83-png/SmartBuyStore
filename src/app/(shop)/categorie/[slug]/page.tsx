@@ -1,22 +1,19 @@
 import { notFound } from 'next/navigation';
-import { categories } from '@/data/categories';
-import { getProductsByCategory } from '@/data/products';
 import { ProductGrid } from '@/components/product/ProductGrid';
-import type { Category } from '@/types/product';
+import { getCategoryBySlug, getVisibleProducts } from '@/lib/db/catalog';
+import { mapDbProducts } from '@/lib/db/product-mapper';
 
 interface PageProps {
   params: { slug: string };
 }
 
-export function generateStaticParams() {
-  return categories.map((c) => ({ slug: c.slug }));
-}
+export const revalidate = 60;
 
-export default function CategoriePage({ params }: PageProps) {
-  const category = categories.find((c) => c.slug === params.slug);
+export default async function CategoriePage({ params }: PageProps) {
+  const category = await getCategoryBySlug(params.slug);
   if (!category) notFound();
 
-  const categoryProducts = getProductsByCategory(params.slug as Category);
+  const categoryProducts = mapDbProducts(await getVisibleProducts({ categorySlug: params.slug }));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">

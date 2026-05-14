@@ -1,10 +1,13 @@
-import { getSaleProducts } from '@/data/products';
+import { getVisibleProducts } from '@/lib/db/catalog';
+import { mapDbProducts } from '@/lib/db/product-mapper';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Zap } from 'lucide-react';
 
-export default function AanbiedingenPage() {
-  const saleProducts = getSaleProducts();
+export const revalidate = 60;
+
+export default async function AanbiedingenPage() {
+  const saleProducts = mapDbProducts(await getVisibleProducts({ onSale: true }));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
