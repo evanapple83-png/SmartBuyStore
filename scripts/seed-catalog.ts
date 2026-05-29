@@ -80,6 +80,7 @@ async function main() {
       short_description: p.shortDescription,
       features: p.features,
       specs: p.specs,
+      attributes: p.attributes ?? {},
       image_primary: p.images.primary,
       image_fallback: p.images.fallback,
       sort_order: i,

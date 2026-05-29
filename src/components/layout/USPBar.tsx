@@ -1,9 +1,10 @@
-import { Wrench, Zap, Trash2 } from 'lucide-react';
+import { Wrench, Zap, Trash2, RotateCcw } from 'lucide-react';
 
 const usps = [
   { icon: Wrench, text: 'Gratis installatie bij elk apparaat' },
   { icon: Zap, text: 'Besteld voor 12:00 → Vandaag bezorgd' },
   { icon: Trash2, text: 'Gratis afvoer oud apparaat' },
+  { icon: RotateCcw, text: '30 dagen retour' },
 ];
 
 export function USPBar() {

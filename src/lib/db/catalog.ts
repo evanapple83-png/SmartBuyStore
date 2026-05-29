@@ -3,6 +3,7 @@
  * Gebruikt server-side Supabase client. RLS handelt zichtbaarheid af.
  */
 import { getSupabaseServer } from '@/lib/supabase/server';
+import type { ProductAttributes } from '@/types/product';
 
 export type DbProduct = {
   id: string;
@@ -25,6 +26,7 @@ export type DbProduct = {
   short_description: string | null;
   features: string[];
   specs: Record<string, string>;
+  attributes: ProductAttributes;
   image_primary: string | null;
   image_fallback: string | null;
   sort_order: number;

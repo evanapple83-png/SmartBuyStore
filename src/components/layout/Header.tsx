@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { Search, ShoppingCart, User, Menu, X, Zap } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Zap, Headphones } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/hooks/useCart';
+import { SearchBox } from './SearchBox';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
@@ -15,7 +16,7 @@ const navLinks = [
 ];
 
 export function Header() {
-  const { totalItems } = useCart();
+  const { totalItems, openCart } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -34,16 +35,7 @@ export function Header() {
           </Link>
 
           {/* Search bar */}
-          <div className="flex-1 max-w-xl hidden md:block">
-            <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input
-                type="search"
-                placeholder="Zoek op product, merk of model..."
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-border rounded-[12px] bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-150"
-              />
-            </div>
-          </div>
+          <SearchBox className="flex-1 max-w-xl hidden md:block" />
 
           {/* Right actions */}
           <div className="ml-auto flex items-center gap-2">
@@ -56,6 +48,14 @@ export function Header() {
             </button>
 
             <Link
+              href="/contact"
+              className="hidden lg:flex items-center gap-1.5 p-2 rounded-[12px] hover:bg-background transition-colors cursor-pointer"
+            >
+              <Headphones size={20} className="text-foreground" />
+              <span className="text-sm font-medium text-foreground">Klantenservice</span>
+            </Link>
+
+            <Link
               href="/account"
               className="hidden sm:flex items-center gap-1.5 p-2 rounded-[12px] hover:bg-background transition-colors cursor-pointer"
             >
@@ -63,9 +63,10 @@ export function Header() {
               <span className="text-sm font-medium text-foreground">Account</span>
             </Link>
 
-            <Link
-              href="/winkelwagen"
+            <button
+              onClick={openCart}
               className="relative flex items-center gap-1.5 bg-primary text-white px-3 py-2 rounded-[12px] hover:bg-primary/90 transition-colors cursor-pointer"
+              aria-label={`Winkelwagen openen${totalItems > 0 ? `, ${totalItems} artikelen` : ''}`}
             >
               <ShoppingCart size={18} />
               <span className="hidden sm:block text-sm font-semibold">Winkelwagen</span>
@@ -74,7 +75,7 @@ export function Header() {
                   {totalItems > 9 ? '9+' : totalItems}
                 </span>
               )}
-            </Link>
+            </button>
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -110,15 +111,7 @@ export function Header() {
       {/* Mobile search */}
       {searchOpen && (
         <div className="md:hidden px-4 pb-3 border-t border-border pt-3">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input
-              type="search"
-              autoFocus
-              placeholder="Zoek op product, merk of model..."
-              className="w-full pl-9 pr-4 py-2.5 text-sm border border-border rounded-[12px] bg-background focus:outline-none focus:border-primary transition-all duration-150"
-            />
-          </div>
+          <SearchBox autoFocus />
         </div>
       )}
 

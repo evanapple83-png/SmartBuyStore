@@ -50,7 +50,7 @@ export function Footer() {
               </div>
               <div className="flex items-start gap-2">
                 <MapPin size={14} className="text-success shrink-0 mt-0.5" />
-                <span>Amsterdam, Nederland</span>
+                <span>Newtonweg 15, 8013 RD Zwolle</span>
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/50">
-            © 2026 Smart Buy Store — KVK: 12345678 — Alle rechten voorbehouden
+            © 2026 Smart Buy Store V.O.F. — KvK 42000760 — Alle rechten voorbehouden
           </p>
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <CreditCard size={14} className="text-white/40" />

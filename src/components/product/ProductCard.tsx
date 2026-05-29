@@ -17,8 +17,14 @@ interface ProductCardProps {
   isInWishlist?: boolean;
 }
 
+/** First few spec values → "635L • No Frost • Energielabel E" */
+function specsLine(specs: Record<string, string>): string {
+  return Object.values(specs).slice(0, 3).join(' • ');
+}
+
 export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishlist }: ProductCardProps) {
   const [cartState, setCartState] = useState<'idle' | 'loading' | 'success'>('idle');
+  const specs = specsLine(product.specs);
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -34,7 +40,7 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
   return (
     <Link
       href={`/product/${product.slug}`}
-      className="group relative bg-surface rounded-[12px] overflow-hidden border border-border shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1 flex flex-col cursor-pointer"
+      className="group relative bg-surface rounded-[12px] overflow-hidden border border-border shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1 flex flex-col h-full cursor-pointer"
     >
       {/* Image area */}
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
@@ -86,35 +92,50 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
       {/* Content */}
       <div className="p-3 flex flex-col gap-2 flex-1">
         <p className="text-xs font-bold text-muted uppercase tracking-wide">{product.brand}</p>
-        <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
+        <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 min-h-[2.5rem]">
           {product.shortName}
         </h3>
 
         <StarRating rating={product.rating} reviewCount={product.reviewCount} />
+
+        {/* Key specs row */}
+        {specs && (
+          <p className="text-xs text-muted leading-snug line-clamp-1">{specs}</p>
+        )}
+
         <DeliveryBadge />
 
-        <div className="mt-auto pt-2 flex items-end justify-between gap-2">
-          <PriceDisplay currentPrice={product.currentPrice} originalPrice={product.originalPrice} size="sm" />
+        {/* Price + CTA pinned to bottom for equal-height cards */}
+        <div className="mt-auto pt-2 flex flex-col gap-2">
+          <PriceDisplay
+            currentPrice={product.currentPrice}
+            originalPrice={product.originalPrice}
+            size="md"
+            showSavingsAmount
+          />
           <button
             onClick={handleAddToCart}
             className={cn(
-              'flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-[12px] transition-all duration-200 cursor-pointer shrink-0',
+              'w-full flex items-center justify-center gap-1.5 text-sm font-semibold px-3 py-2.5 rounded-[12px] transition-all duration-200 cursor-pointer',
               cartState === 'success'
                 ? 'bg-success text-white'
-                : 'bg-primary text-white hover:bg-primary/90 active:scale-95'
+                : 'bg-accent text-white hover:bg-accent/90 active:scale-[0.98]'
             )}
-            aria-label="In winkelwagen"
+            aria-label={`${product.shortName} in winkelwagen`}
           >
             {cartState === 'loading' ? (
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : cartState === 'success' ? (
-              <Check size={14} />
+              <>
+                <Check size={16} />
+                Toegevoegd
+              </>
             ) : (
-              <ShoppingCart size={14} />
+              <>
+                <ShoppingCart size={16} />
+                In winkelwagen
+              </>
             )}
-            <span className="hidden sm:inline">
-              {cartState === 'success' ? 'Toegevoegd' : 'Kopen'}
-            </span>
           </button>
         </div>
       </div>

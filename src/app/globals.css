@@ -1,19 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --color-primary: #0B1F42;
-    --color-accent: #E63946;
-    --color-success: #06D6A0;
+    --color-primary: #0B2347;
+    --color-accent: #EF3340;
+    --color-success: #10B981;
     --color-warm: #F4A261;
-    --color-background: #F4F4F0;
+    --color-background: #F7F7F4;
     --color-surface: #FFFFFF;
-    --color-foreground: #111827;
-    --color-muted: #6B7280;
+    --color-foreground: #0F172A;
+    --color-muted: #64748B;
     --color-border: #E5E7EB;
   }
 
@@ -22,7 +20,7 @@
   }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-inter), system-ui, sans-serif;
     background-color: var(--color-background);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
@@ -45,13 +43,8 @@
 }
 
 @layer utilities {
-  .font-display {
-    font-family: 'Syne', sans-serif;
-  }
-
-  .font-body {
-    font-family: 'DM Sans', sans-serif;
-  }
+  /* .font-display / .font-body are generated from tailwind.config fontFamily
+     (Manrope / Inter via next/font CSS variables) */
 
   .rounded-pill {
     border-radius: 50px;

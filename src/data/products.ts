@@ -24,6 +24,7 @@ export const products: Product[] = [
     shortDescription: 'Innovatieve Multidoor met Beverage Center™ voor gekoeld water. NoFrost, Wi-Fi en marineblauw metaal design.',
     features: ['Beverage Center™', 'NoFrost', 'Wi-Fi / SmartThings', 'Marineblauw metaal'],
     specs: { 'Type': 'Multidoor', 'Inhoud koel': '406L', 'Inhoud vries': '209L', 'Energielabel': 'E', 'Kleur': 'Marineblauw' },
+    attributes: { type: 'Multidoor', capacity_fridge_l: 406, capacity_freezer_l: 209, capacity_total_l: 615, color: 'Marineblauw', no_frost: true, build_type: 'vrijstaand' },
   },
   {
     id: '2',
@@ -48,6 +49,7 @@ export const products: Product[] = [
     shortDescription: 'Fluisterstille wasmachine met Load Detect en Steam Hygiene. Stop & Add voor vergeten wasgoed.',
     features: ['Load Detect', 'Steam Hygiene', 'Stop & Add', 'Fluisterstil'],
     specs: { 'Capaciteit': '8 kg', 'Centrifuge': '1400 tpm', 'Energielabel': 'A', 'Geluid wassen': '44 dB' },
+    attributes: { load_kg: 8, spin_rpm: 1400, noise_db: 44, build_type: 'vrijstaand' },
   },
   {
     id: '3',
@@ -72,6 +74,7 @@ export const products: Product[] = [
     shortDescription: 'Stijlvolle RVS koel-vriescombinatie met Wi-Fi en SpaceMax technologie voor maximale ruimte.',
     features: ['Wi-Fi SmartThings', 'SpaceMax', 'Metal Cooling', 'Twin Cooling Plus'],
     specs: { 'Type': 'Koel-vriescombinatie', 'Inhoud totaal': '390L', 'Energielabel': 'C', 'Kleur': 'RVS Zilver' },
+    attributes: { type: 'Koel-vriescombinatie', capacity_total_l: 390, color: 'RVS Zilver', build_type: 'vrijstaand' },
   },
   {
     id: '4',
@@ -96,6 +99,7 @@ export const products: Product[] = [
     shortDescription: 'Ruime No Frost koel-vriescombinatie. Automatische ontdooiing, SpaceMax rek en zuinig energieverbruik.',
     features: ['No Frost', '341L inhoud', 'SpaceMax rek', 'Automatische ontdooiing'],
     specs: { 'Inhoud totaal': '341L', 'Energielabel': 'B', 'Type': 'Koel-vriescombinatie', 'Kleur': 'Zwart/inox' },
+    attributes: { type: 'Koel-vriescombinatie', capacity_total_l: 341, color: 'Zwart/inox', no_frost: true, build_type: 'vrijstaand' },
   },
   {
     id: '5',
@@ -120,6 +124,7 @@ export const products: Product[] = [
     shortDescription: 'Klassieke 60/40 combinatie in strak wit. Ideaal voor gezinnen met voldoende opbergruimte.',
     features: ['341L totaal', '60/40 verdeling', 'Wit design', 'SpaceMax'],
     specs: { 'Inhoud totaal': '341L', 'Energielabel': 'C', 'Kleur': 'Wit', 'Breedte': '60cm' },
+    attributes: { type: 'Koel-vriescombinatie', capacity_total_l: 341, color: 'Wit', width_cm: 60, build_type: 'vrijstaand' },
   },
   {
     id: '6',
@@ -144,6 +149,7 @@ export const products: Product[] = [
     shortDescription: 'Stijlvol Graphite Steel design met No Frost en SpaceMax voor maximale gebruiksruimte.',
     features: ['No Frost', 'SpaceMax', 'Graphite Steel', 'LED verlichting'],
     specs: { 'Energielabel': 'B', 'Kleur': 'Graphite Steel', 'Type': 'Koel-vriescombinatie' },
+    attributes: { type: 'Koel-vriescombinatie', color: 'Graphite Steel', no_frost: true, build_type: 'vrijstaand' },
   },
   {
     id: '7',
@@ -168,6 +174,7 @@ export const products: Product[] = [
     shortDescription: 'Nieuwste energiezuinige NoFrost combinatie. Energielabel A, modern Metallic Graphite design.',
     features: ['NoFrost', 'Energielabel A', 'Metallic Graphite', '344L totaal'],
     specs: { 'Koel': '230L', 'Vries': '114L', 'Energielabel': 'A', 'Kleur': 'Metallic Graphite' },
+    attributes: { type: 'Koel-vriescombinatie', capacity_fridge_l: 230, capacity_freezer_l: 114, capacity_total_l: 344, color: 'Metallic Graphite', no_frost: true, build_type: 'vrijstaand' },
   },
   {
     id: '8',
@@ -192,6 +199,7 @@ export const products: Product[] = [
     shortDescription: 'Volledig geïntegreerde vaatwasser voor een strakke keukenlijn. 14 couverts, onder 44dB en Zone Wash.',
     features: ['Volledig geïntegreerd', '14 couverts', 'Zone Wash', 'Onder 44dB'],
     specs: { 'Couverts': '14', 'Breedte': '60cm', 'Energielabel': 'B', 'Geluid': '< 44dB' },
+    attributes: { couverts: 14, width_cm: 60, noise_db: 44, build_type: 'inbouw' },
   },
 ];
 

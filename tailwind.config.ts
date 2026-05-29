@@ -9,19 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#0B1F42',
-        accent: '#E63946',
-        success: '#06D6A0',
+        primary: '#0B2347',
+        accent: '#EF3340',
+        success: '#10B981',
         warm: '#F4A261',
-        background: '#F4F4F0',
+        background: '#F7F7F4',
         surface: '#FFFFFF',
-        foreground: '#111827',
-        muted: '#6B7280',
+        foreground: '#0F172A',
+        muted: '#64748B',
         border: '#E5E7EB',
       },
       fontFamily: {
-        display: ['Syne', 'sans-serif'],
-        body: ['DM Sans', 'sans-serif'],
+        display: ['var(--font-manrope)', 'system-ui', 'sans-serif'],
+        body: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '12px',

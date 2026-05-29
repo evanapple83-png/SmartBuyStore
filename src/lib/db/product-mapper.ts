@@ -28,6 +28,7 @@ export function mapDbProduct(row: any): Product {
     shortDescription: row.short_description || '',
     features: row.features || [],
     specs: row.specs || {},
+    attributes: row.attributes || {},
   };
 }
 

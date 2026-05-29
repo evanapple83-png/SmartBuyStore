@@ -1,30 +1,79 @@
 'use client';
 import { useState } from 'react';
-import { ShoppingCart, CheckCircle, Truck, Wrench, RotateCcw, Shield } from 'lucide-react';
+import {
+  ShoppingCart,
+  CheckCircle,
+  Check,
+  Truck,
+  Wrench,
+  Recycle,
+  RotateCcw,
+  CreditCard,
+  PackageCheck,
+  ChevronDown,
+} from 'lucide-react';
 import type { Product } from '@/types/product';
-import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { PriceDisplay } from '@/components/product/PriceDisplay';
-import { EnergyLabel } from '@/components/product/EnergyLabel';
-import { DeliveryBadge } from '@/components/product/DeliveryBadge';
 import { StarRating } from '@/components/ui/StarRating';
 import { ProductGrid } from '@/components/product/ProductGrid';
+import { ProductGallery } from '@/components/product/ProductGallery';
+import { PostcodeChecker } from '@/components/product/PostcodeChecker';
+import { ReviewSummary } from '@/components/product/ReviewSummary';
+import { Breadcrumbs } from '@/components/product/Breadcrumbs';
 import { useCart } from '@/hooks/useCart';
+import { formatPriceShort } from '@/lib/price';
+import { productKeySpecs } from '@/lib/product-display';
+import { CATEGORY_LABELS } from '@/lib/catalog-filters';
+import { cn } from '@/lib/utils';
 
 interface ProductDetailProps {
   product: Product;
   related: Product[];
 }
 
-const guarantees = [
-  { icon: Truck, text: 'Zelfde dag bezorging (voor 12:00)' },
+const trustList = [
+  { icon: Truck, text: 'Vandaag bezorgd indien besteld voor 12:00' },
   { icon: Wrench, text: 'Gratis professionele installatie' },
-  { icon: RotateCcw, text: 'Gratis afvoer oud apparaat' },
-  { icon: Shield, text: '30 dagen retourrecht' },
+  { icon: Recycle, text: 'Gratis afvoer oud apparaat' },
+  { icon: RotateCcw, text: '30 dagen retourrecht' },
+];
+
+const installSteps = [
+  'We plaatsen het apparaat op de juiste plek',
+  'We sluiten water en afvoer aan indien aanwezig',
+  'We testen of alles naar behoren werkt',
+  'We nemen al het verpakkingsmateriaal mee',
+  'We voeren je oude apparaat gratis af',
+];
+
+const faqs = [
+  {
+    q: 'Kan mijn oude apparaat worden meegenomen?',
+    a: 'Ja. Ons eigen bezorgteam neemt je oude apparaat gratis mee bij de levering — je hoeft niets te regelen.',
+  },
+  {
+    q: 'Wat valt onder gratis installatie?',
+    a: 'We plaatsen het apparaat, sluiten water/afvoer aan waar van toepassing, testen de werking en nemen het verpakkingsmateriaal mee.',
+  },
+  {
+    q: 'Wanneer wordt mijn apparaat bezorgd?',
+    a: 'Bestel je vóór 12:00, dan bezorgen we vandaag nog. Het exacte bezorgvenster zie je via de postcodecheck en in je bevestiging.',
+  },
+  {
+    q: 'Kan ik achteraf betalen?',
+    a: 'Ja, je kunt veilig betalen met iDEAL, Klarna (achteraf), Visa of Mastercard tijdens het afrekenen.',
+  },
+  {
+    q: 'Wat als het apparaat niet past?',
+    a: 'Je hebt 30 dagen retourrecht. Past het apparaat niet of voldoet het niet, dan nemen we het kosteloos retour.',
+  },
 ];
 
 export function ProductDetail({ product, related }: ProductDetailProps) {
   const { addToCart } = useCart();
   const [cartState, setCartState] = useState<'idle' | 'loading' | 'success'>('idle');
+  const keySpecs = productKeySpecs(product);
+  const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category;
 
   function handleAddToCart() {
     if (cartState !== 'idle') return;
@@ -37,123 +86,251 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      <div className="grid lg:grid-cols-2 gap-12 mb-16">
-        {/* Image */}
-        <div className="relative aspect-square bg-surface rounded-[20px] border border-border overflow-hidden">
-          <ImageWithFallback
-            src={product.images.primary}
-            fallbackSrc={product.images.fallback}
-            alt={product.name}
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            priority
-            className="object-contain p-8"
-          />
-          {product.isNew && (
-            <div className="absolute top-4 left-4 bg-primary text-white text-xs font-bold px-3 py-1 rounded-pill">
-              NIEUW
-            </div>
-          )}
-          {product.isOnSale && (
-            <div className="absolute top-4 left-4 mt-6 bg-accent text-white text-xs font-bold px-3 py-1 rounded-pill">
-              SALE
-            </div>
-          )}
-        </div>
+    <div className="max-w-7xl mx-auto px-4 py-8 pb-28 lg:pb-8">
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Winkel', href: '/winkel' },
+          { label: categoryLabel, href: `/categorie/${product.category}` },
+          { label: product.shortName },
+        ]}
+      />
 
-        {/* Details */}
+      <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 mb-16">
+        {/* Gallery */}
+        <ProductGallery product={product} />
+
+        {/* Purchase panel */}
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{product.brand}</p>
-            <h1 className="text-2xl font-display font-black text-foreground leading-tight mb-3">
+            <h1 className="text-2xl lg:text-3xl font-display font-extrabold text-foreground leading-tight tracking-tight mb-3">
               {product.name}
             </h1>
-            <div className="flex items-center gap-3 flex-wrap">
+            <a href="#reviews" className="inline-flex items-center hover:opacity-80 transition-opacity">
               <StarRating rating={product.rating} reviewCount={product.reviewCount} size="md" />
-              <EnergyLabel label={product.energyLabel} size="md" />
-            </div>
+            </a>
           </div>
 
-          <PriceDisplay currentPrice={product.currentPrice} originalPrice={product.originalPrice} size="lg" />
-          <DeliveryBadge />
+          {/* Key specs */}
+          {keySpecs.length > 0 && (
+            <p className="text-sm font-medium text-foreground">{keySpecs.join(' • ')}</p>
+          )}
+
+          <PriceDisplay
+            currentPrice={product.currentPrice}
+            originalPrice={product.originalPrice}
+            size="lg"
+            showSavingsAmount
+          />
 
           <p className="text-sm text-muted leading-relaxed">{product.shortDescription}</p>
 
-          {/* Features */}
-          <div className="flex flex-wrap gap-2">
-            {product.features.map((f) => (
-              <span
-                key={f}
-                className="inline-flex items-center gap-1 text-xs font-medium bg-primary/5 text-primary px-3 py-1.5 rounded-pill border border-primary/10"
-              >
-                <CheckCircle size={11} />
-                {f}
-              </span>
-            ))}
-          </div>
+          {/* Feature chips */}
+          {product.features.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {product.features.map((f) => (
+                <span
+                  key={f}
+                  className="inline-flex items-center gap-1 text-xs font-medium bg-primary/5 text-primary px-3 py-1.5 rounded-pill border border-primary/10"
+                >
+                  <CheckCircle size={11} />
+                  {f}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Stock */}
+          <p
+            className={cn(
+              'flex items-center gap-2 text-sm font-semibold',
+              product.inStock ? 'text-success' : 'text-warm'
+            )}
+          >
+            <PackageCheck size={16} />
+            {product.inStock
+              ? 'Op voorraad — beschikbaar voor levering vandaag'
+              : 'Tijdelijk uitverkocht'}
+          </p>
 
           {/* CTA */}
           <button
             onClick={handleAddToCart}
-            className={`flex items-center justify-center gap-2 w-full py-4 rounded-[12px] font-bold text-base transition-all duration-200 cursor-pointer ${
+            disabled={!product.inStock}
+            className={cn(
+              'flex items-center justify-center gap-2 w-full py-4 rounded-[12px] font-bold text-base transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
               cartState === 'success'
                 ? 'bg-success text-white'
                 : 'bg-accent text-white hover:bg-accent/90 shadow-lg shadow-accent/20'
-            }`}
+            )}
           >
             {cartState === 'loading' ? (
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : cartState === 'success' ? (
               <>
-                <CheckCircle size={20} />
+                <Check size={20} />
                 Toegevoegd aan winkelwagen
               </>
             ) : (
               <>
                 <ShoppingCart size={20} />
-                In winkelwagen — €{product.currentPrice.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
+                In winkelwagen — €{formatPriceShort(product.currentPrice)}
               </>
             )}
           </button>
 
-          {/* Guarantees */}
-          <div className="grid grid-cols-2 gap-2 pt-2">
-            {guarantees.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-2 text-xs text-muted">
-                <Icon size={13} className="text-success shrink-0" />
-                <span>{text}</span>
-              </div>
+          {/* Trust list */}
+          <ul className="flex flex-col gap-2 pt-1">
+            {trustList.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-2.5 text-sm text-foreground">
+                <Icon size={15} className="text-success shrink-0" />
+                {text}
+              </li>
             ))}
-          </div>
+            <li className="flex items-center gap-2.5 text-sm text-muted">
+              <CreditCard size={15} className="text-primary shrink-0" />
+              Veilig betalen met iDEAL, Klarna, Visa of Mastercard
+            </li>
+          </ul>
+
+          {/* Postcode checker */}
+          <PostcodeChecker />
         </div>
       </div>
 
-      {/* Specs */}
+      {/* ── Specificaties ── */}
       {Object.keys(product.specs).length > 0 && (
-        <div className="mb-16">
-          <h2 className="text-xl font-display font-black text-foreground mb-4">Specificaties</h2>
-          <div className="bg-surface rounded-[12px] border border-border overflow-hidden">
+        <Section title="Specificaties">
+          <div className="bg-surface rounded-[12px] border border-border overflow-hidden max-w-3xl">
             {Object.entries(product.specs).map(([key, value], i) => (
               <div
                 key={key}
-                className={`flex items-center px-6 py-3 text-sm ${i % 2 === 0 ? 'bg-background' : 'bg-surface'}`}
+                className={cn('flex items-center px-6 py-3 text-sm', i % 2 === 0 ? 'bg-background' : 'bg-surface')}
               >
                 <span className="font-semibold text-foreground w-1/2">{key}</span>
                 <span className="text-muted">{value}</span>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Related products */}
-      {related.length > 0 && (
-        <div>
-          <h2 className="text-xl font-display font-black text-foreground mb-6">Vergelijkbare producten</h2>
-          <ProductGrid products={related} columns={4} />
+      {/* ── Omschrijving ── */}
+      <Section title="Omschrijving">
+        <div className="max-w-3xl text-sm text-foreground/80 leading-relaxed">
+          <p>{product.shortDescription}</p>
+          {product.features.length > 0 && (
+            <ul className="mt-4 grid sm:grid-cols-2 gap-2">
+              {product.features.map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <CheckCircle size={14} className="text-success shrink-0" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+      </Section>
+
+      {/* ── Bezorging & installatie ── */}
+      <Section title="Bezorging & installatie">
+        <div className="max-w-3xl rounded-[16px] border border-success/20 bg-success/5 p-6">
+          <p className="text-sm text-foreground mb-4">
+            Onze eigen specialisten leveren én installeren je apparaat. Bij elke bestelling inbegrepen:
+          </p>
+          <ul className="grid sm:grid-cols-2 gap-2.5">
+            {installSteps.map((s) => (
+              <li key={s} className="flex items-start gap-2.5 text-sm text-foreground">
+                <CheckCircle size={16} className="text-success shrink-0 mt-0.5" />
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Section>
+
+      {/* ── Reviews ── */}
+      <Section title="Reviews" id="reviews">
+        <div className="max-w-3xl">
+          <ReviewSummary rating={product.rating} reviewCount={product.reviewCount} />
+        </div>
+      </Section>
+
+      {/* ── FAQ ── */}
+      <Section title="Veelgestelde vragen">
+        <div className="max-w-3xl flex flex-col gap-2">
+          {faqs.map((f) => (
+            <FaqItem key={f.q} question={f.q} answer={f.a} />
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Vergelijkbare producten ── */}
+      {related.length > 0 && (
+        <Section title="Vergelijkbare producten">
+          <ProductGrid products={related} columns={4} />
+        </Section>
       )}
+
+      {/* Sticky mobile add-to-cart bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-border px-4 py-3 flex items-center gap-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="shrink-0">
+          <p className="text-lg font-display font-extrabold text-foreground leading-none">
+            €{formatPriceShort(product.currentPrice)}
+          </p>
+          {product.inStock && <p className="text-[11px] text-success font-medium mt-0.5">Op voorraad</p>}
+        </div>
+        <button
+          onClick={handleAddToCart}
+          disabled={!product.inStock}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-2 py-3 rounded-[12px] font-bold text-sm transition-all cursor-pointer disabled:opacity-50',
+            cartState === 'success' ? 'bg-success text-white' : 'bg-accent text-white hover:bg-accent/90'
+          )}
+        >
+          {cartState === 'success' ? (
+            <>
+              <Check size={18} /> Toegevoegd
+            </>
+          ) : (
+            <>
+              <ShoppingCart size={18} /> In winkelwagen
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+
+function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
+  return (
+    <section id={id} className="mb-12 scroll-mt-24">
+      <h2 className="text-xl font-display font-extrabold text-foreground mb-5">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-border rounded-[12px] bg-surface overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer hover:bg-background transition-colors"
+      >
+        <span className="text-sm font-semibold text-foreground">{question}</span>
+        <ChevronDown
+          size={18}
+          className={cn('text-muted shrink-0 transition-transform', open && 'rotate-180')}
+        />
+      </button>
+      {open && <p className="px-5 pb-4 -mt-1 text-sm text-muted leading-relaxed">{answer}</p>}
     </div>
   );
 }
