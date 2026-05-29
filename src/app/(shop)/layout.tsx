@@ -8,6 +8,7 @@ import { CompareTray } from '@/components/compare/CompareTray';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { WishlistDrawer } from '@/components/wishlist/WishlistDrawer';
 import { CookieConsent } from '@/components/legal/CookieConsent';
+import { getStoreSettings } from '@/lib/db/settings';
 
 /**
  * Shop layout — gedeelde chrome (USPBar + Header + Footer) voor alle
@@ -18,13 +19,14 @@ import { CookieConsent } from '@/components/legal/CookieConsent';
  *
  * /admin/* gebruikt deze layout NIET (eigen sidebar-shell).
  */
-export default function ShopLayout({ children }: { children: React.ReactNode }) {
+export default async function ShopLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getStoreSettings();
   return (
     <CartProvider>
       <WishlistProvider>
         <CompareProvider>
           <USPBar />
-          <Header />
+          <Header phone={settings.company_phone || undefined} />
           <main className="flex-1">{children}</main>
           <Footer />
           <CartDrawer />

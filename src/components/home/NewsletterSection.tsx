@@ -1,15 +1,23 @@
 'use client';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Mail, ArrowRight, CheckCircle } from 'lucide-react';
+import { subscribeNewsletter } from '@/lib/db/public-actions';
 
 export function NewsletterSection() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
-    setSubmitted(true);
+    setError(null);
+    start(async () => {
+      const result = await subscribeNewsletter(email);
+      if (!result.ok) { setError(result.error || 'Er ging iets mis'); return; }
+      setSubmitted(true);
+    });
   }
 
   return (
@@ -28,26 +36,30 @@ export function NewsletterSection() {
         {submitted ? (
           <div className="flex items-center justify-center gap-2 text-success bg-success/10 rounded-[12px] py-4 px-6">
             <CheckCircle size={20} />
-            <span className="font-semibold">Bedankt! U ontvangt binnenkort een bevestigingsemail.</span>
+            <span className="font-semibold">Bedankt! Je bent ingeschreven voor onze nieuwsbrief.</span>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex gap-2 max-w-md mx-auto">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="uw@emailadres.nl"
-              required
-              className="flex-1 px-4 py-3 rounded-[12px] bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-success focus:ring-2 focus:ring-success/20 transition-all duration-150 text-sm"
-            />
-            <button
-              type="submit"
-              className="flex items-center gap-2 bg-accent text-white font-bold px-5 py-3 rounded-[12px] hover:bg-accent/90 transition-colors cursor-pointer shrink-0"
-            >
-              Inschrijven
-              <ArrowRight size={16} />
-            </button>
-          </form>
+          <>
+            <form onSubmit={handleSubmit} className="flex gap-2 max-w-md mx-auto">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="uw@emailadres.nl"
+                required
+                className="flex-1 px-4 py-3 rounded-[12px] bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-success focus:ring-2 focus:ring-success/20 transition-all duration-150 text-sm"
+              />
+              <button
+                type="submit"
+                disabled={pending}
+                className="flex items-center gap-2 bg-accent text-white font-bold px-5 py-3 rounded-[12px] hover:bg-accent/90 transition-colors cursor-pointer shrink-0 disabled:opacity-60"
+              >
+                {pending ? 'Bezig...' : 'Inschrijven'}
+                <ArrowRight size={16} />
+              </button>
+            </form>
+            {error && <p className="text-sm text-white/90 bg-accent/30 rounded-[8px] py-2 px-3 mt-3 inline-block">{error}</p>}
+          </>
         )}
 
         <p className="text-xs text-white/40 mt-4">

@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Search, ShoppingCart, User, Menu, X, Zap, Headphones, Heart } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Zap, Headphones, Heart, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -16,7 +16,7 @@ const navLinks = [
   { href: '/merken', label: 'Merken' },
 ];
 
-export function Header() {
+export function Header({ phone }: { phone?: string }) {
   const { totalItems, openCart } = useCart();
   const { count: wishlistCount, open: openWishlist } = useWishlist();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -49,13 +49,23 @@ export function Header() {
               <Search size={20} className="text-foreground" />
             </button>
 
-            <Link
-              href="/contact"
-              className="hidden lg:flex items-center gap-1.5 p-2 rounded-[12px] hover:bg-background transition-colors cursor-pointer"
-            >
-              <Headphones size={20} className="text-foreground" />
-              <span className="text-sm font-medium text-foreground">Klantenservice</span>
-            </Link>
+            {phone ? (
+              <a
+                href={`tel:${phone.replace(/\s/g, '')}`}
+                className="hidden lg:flex items-center gap-1.5 p-2 rounded-[12px] hover:bg-background transition-colors cursor-pointer"
+              >
+                <Phone size={20} className="text-success" />
+                <span className="text-sm font-semibold text-foreground">{phone}</span>
+              </a>
+            ) : (
+              <Link
+                href="/contact"
+                className="hidden lg:flex items-center gap-1.5 p-2 rounded-[12px] hover:bg-background transition-colors cursor-pointer"
+              >
+                <Headphones size={20} className="text-foreground" />
+                <span className="text-sm font-medium text-foreground">Klantenservice</span>
+              </Link>
+            )}
 
             <button
               onClick={openWishlist}

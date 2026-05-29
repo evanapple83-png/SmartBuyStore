@@ -15,6 +15,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { getMollieClient, isMollieConfigured } from '@/lib/mollie/client';
+import { dispatchOrderEmail } from '@/lib/mail/dispatch';
 
 export const dynamic = 'force-dynamic';
 
@@ -155,6 +156,10 @@ export async function POST(req: Request) {
             .from('sbs_mollie_events')
             .update({ result: 'error', error_message: updateErr.message })
             .eq('id', eventRow.id);
+        } else {
+          // Transactionele mail (best-effort, idempotent).
+          if (newOrderStatus === 'paid') await dispatchOrderEmail(orderId, 'payment_received');
+          else if (newOrderStatus === 'cancelled') await dispatchOrderEmail(orderId, 'order_cancelled');
         }
       }
     }

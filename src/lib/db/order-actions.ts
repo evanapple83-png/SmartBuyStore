@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getMollieClient, isMollieConfigured, getRedirectUrl, getWebhookUrl } from '@/lib/mollie/client';
 import { validateDiscountCode, incrementDiscountUse } from './discount-codes';
+import { dispatchOrderEmail } from '@/lib/mail/dispatch';
 import type { OrderStatus } from './orders';
 
 const BTW_RATE = 21;
@@ -84,26 +85,63 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
     }
   }
 
-  // Bedragen berekenen (incl→excl)
-  const lines = input.items.map((it, idx) => {
+  // ── Server-side prijs-/voorraadverificatie ──────────────────────────────
+  // We vertrouwen NOOIT de prijzen die de client meestuurt. Haal de echte
+  // prijs, voorraad en zichtbaarheid op uit de database per productId.
+  const admin = getSupabaseAdmin();
+  const productIds = Array.from(new Set(input.items.map((it) => it.productId)));
+  const { data: dbProducts, error: prodErr } = await admin
+    .from('sbs_products')
+    .select('id, slug, name, short_name, current_price, btw_rate, in_stock, is_hidden, image_primary, image_fallback, sbs_brands(name)')
+    .in('id', productIds);
+
+  if (prodErr) {
+    console.error('createOrder product lookup error:', prodErr);
+    return { ok: false, error: 'We konden je winkelmand niet verifiëren. Probeer het opnieuw.' };
+  }
+
+  const byId = new Map((dbProducts ?? []).map((p: any) => [p.id, p]));
+
+  // Bedragen berekenen op basis van DB-prijzen (incl→excl)
+  const lines = [];
+  for (let idx = 0; idx < input.items.length; idx++) {
+    const it = input.items[idx];
+    const p: any = byId.get(it.productId);
+    if (!p) {
+      return { ok: false, error: 'Een product in je winkelmand bestaat niet meer. Ververs de pagina en probeer het opnieuw.' };
+    }
+    if (p.is_hidden) {
+      return { ok: false, error: `"${p.name}" is niet langer beschikbaar. Verwijder het uit je winkelmand.` };
+    }
+    if (!p.in_stock) {
+      return { ok: false, error: `"${p.name}" is helaas niet meer op voorraad.` };
+    }
+
     const qty = Math.max(1, Math.floor(it.qty));
-    const unit_incl = Number(it.unitPriceInclBtw);
-    const unit_excl = +(unit_incl / (1 + BTW_RATE / 100)).toFixed(2);
+    const unit_incl = Number(p.current_price);          // ← bron van waarheid: DB
+    const btwRate = Number(p.btw_rate) || BTW_RATE;
+    const unit_excl = +(unit_incl / (1 + btwRate / 100)).toFixed(2);
     const line_excl = +(unit_excl * qty).toFixed(2);
     const line_incl = +(unit_incl * qty).toFixed(2);
     const line_btw = +(line_incl - line_excl).toFixed(2);
-    return {
+
+    lines.push({
       sort_order: idx,
-      product_id: it.productId,
-      product_snapshot: { name: it.name, slug: it.slug, brand: it.brand, image: it.image },
+      product_id: p.id,
+      product_snapshot: {
+        name: p.name,
+        slug: p.slug,
+        brand: p.sbs_brands?.name ?? it.brand,
+        image: p.image_primary ?? p.image_fallback ?? it.image,
+      },
       qty,
       unit_price_excl_btw: unit_excl,
-      btw_rate: BTW_RATE,
+      btw_rate: btwRate,
       line_subtotal_excl_btw: line_excl,
       line_btw,
       line_total_incl_btw: line_incl,
-    };
-  });
+    });
+  }
 
   const subtotal_excl_btw = +lines.reduce((s, l) => s + l.line_subtotal_excl_btw, 0).toFixed(2);
   const btw_total = +lines.reduce((s, l) => s + l.line_btw, 0).toFixed(2);
@@ -125,7 +163,6 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const total_incl_btw = +Math.max(0, goods_incl_btw + delivery_cost - discount_amount).toFixed(2);
 
   // Maak order (via admin client — anon kan via RLS maar dit is robuuster)
-  const admin = getSupabaseAdmin();
   const supabase = getSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -175,6 +212,9 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   if (applied_discount_code) {
     await incrementDiscountUse(applied_discount_code);
   }
+
+  // Bestelbevestiging mailen (best-effort, blokkeert de order niet).
+  await dispatchOrderEmail(order.id, 'order_confirmation');
 
   // Mollie payment aanmaken (alleen als geconfigureerd)
   let checkoutUrl: string | null = null;
@@ -307,6 +347,18 @@ export async function updateOrderStatus(
       by_user_id: user.id,
       note: options.note.trim(),
     });
+  }
+
+  // Statusmail versturen (best-effort, idempotent, blokkeert niets).
+  const EMAIL_FOR_STATUS: Partial<Record<OrderStatus, Parameters<typeof dispatchOrderEmail>[1]>> = {
+    paid: 'payment_received',
+    planned_delivery: 'order_planned',
+    delivered: 'order_delivered',
+    cancelled: 'order_cancelled',
+  };
+  const emailEvent = EMAIL_FOR_STATUS[toStatus];
+  if (emailEvent) {
+    await dispatchOrderEmail(orderId, emailEvent);
   }
 
   revalidatePath('/admin/bestellingen');

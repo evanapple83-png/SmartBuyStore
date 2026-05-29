@@ -13,6 +13,7 @@ import {
   Settings,
   UserCog,
   Truck,
+  MessageSquare,
   LogOut,
 } from 'lucide-react';
 
@@ -28,6 +29,7 @@ const ALL_LINKS: { href: string; label: string; icon: any; roles: Role[] }[] = [
   { href: '/admin',                label: 'Dashboard',        icon: LayoutDashboard, roles: ['admin', 'staff'] },
   { href: '/admin/bestellingen',   label: 'Bestellingen',     icon: ShoppingBag,     roles: ['admin', 'staff'] },
   { href: '/admin/klanten',        label: 'Klanten',          icon: Users,           roles: ['admin', 'staff'] },
+  { href: '/admin/berichten',      label: 'Berichten',        icon: MessageSquare,   roles: ['admin', 'staff'] },
   { href: '/admin/producten',      label: 'Producten',        icon: Box,             roles: ['admin', 'staff'] },
   { href: '/admin/categorieen',    label: 'Categorieën',      icon: Folder,          roles: ['admin', 'staff'] },
   { href: '/admin/kortingscodes',  label: 'Kortingscodes',    icon: Tag,             roles: ['admin', 'staff'] },
