@@ -15,8 +15,8 @@ const trustItems = [
 export function HeroSection() {
   return (
     <section className="relative bg-gradient-to-br from-primary via-[#0d2a5c] to-[#0B1F42] overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5">
+      {/* Background pattern (decoratief — mag geen klikken opvangen) */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none" aria-hidden>
         <div
           className="absolute inset-0"
           style={{
@@ -26,7 +26,7 @@ export function HeroSection() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-16 lg:py-24">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 lg:py-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Text */}
           <motion.div

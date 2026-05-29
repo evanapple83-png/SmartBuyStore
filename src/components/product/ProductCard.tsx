@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingCart, Check } from 'lucide-react';
+import { Heart, ShoppingCart, Check, Scale } from 'lucide-react';
 import type { Product } from '@/types/product';
+import { useCompare } from '@/hooks/useCompare';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { PriceDisplay } from './PriceDisplay';
 import { EnergyLabel } from './EnergyLabel';
@@ -25,6 +26,8 @@ function specsLine(specs: Record<string, string>): string {
 export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishlist }: ProductCardProps) {
   const [cartState, setCartState] = useState<'idle' | 'loading' | 'success'>('idle');
   const specs = specsLine(product.specs);
+  const { toggle: toggleCompare, isSelected, canAdd } = useCompare();
+  const inCompare = isSelected(product.id);
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -136,6 +139,23 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
                 In winkelwagen
               </>
             )}
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggleCompare(product);
+            }}
+            disabled={!inCompare && !canAdd}
+            className={cn(
+              'flex items-center justify-center gap-1.5 text-xs font-semibold py-1 rounded-[10px] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
+              inCompare ? 'text-primary' : 'text-muted hover:text-primary'
+            )}
+            aria-pressed={inCompare}
+            title={!inCompare && !canAdd ? 'Je kunt maximaal 4 producten vergelijken' : undefined}
+          >
+            {inCompare ? <Check size={13} /> : <Scale size={13} />}
+            {inCompare ? 'In vergelijking' : 'Vergelijk'}
           </button>
         </div>
       </div>

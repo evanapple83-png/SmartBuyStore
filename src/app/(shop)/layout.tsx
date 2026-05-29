@@ -3,6 +3,8 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CartProvider } from '@/hooks/useCart';
 import { CartDrawer } from '@/components/cart/CartDrawer';
+import { CompareProvider } from '@/hooks/useCompare';
+import { CompareTray } from '@/components/compare/CompareTray';
 
 /**
  * Shop layout — gedeelde chrome (USPBar + Header + Footer) voor alle
@@ -16,11 +18,14 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <USPBar />
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
-      <CartDrawer />
+      <CompareProvider>
+        <USPBar />
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <CartDrawer />
+        <CompareTray />
+      </CompareProvider>
     </CartProvider>
   );
 }
