@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Mail, MapPin, CreditCard } from 'lucide-react';
+import { Mail, MapPin, CreditCard, Phone } from 'lucide-react';
+import { getStoreSettings } from '@/lib/db/settings';
 
 const winkelLinks = [
   { href: '/categorie/koelkasten', label: 'Koelkasten' },
@@ -29,7 +30,8 @@ const infoLinks = [
 
 const paymentMethods = ['iDEAL', 'Visa', 'Mastercard', 'PayPal', 'Klarna', 'Afterpay', 'Maestro'];
 
-export function Footer() {
+export async function Footer() {
+  const settings = await getStoreSettings();
   return (
     <footer className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -49,6 +51,14 @@ export function Footer() {
                   info@sbsnl.nl
                 </a>
               </div>
+              {settings.company_phone && (
+                <div className="flex items-center gap-2">
+                  <Phone size={14} className="text-success shrink-0" />
+                  <a href={`tel:${settings.company_phone.replace(/\s/g, '')}`} className="hover:text-white transition-colors cursor-pointer">
+                    {settings.company_phone}
+                  </a>
+                </div>
+              )}
               <div className="flex items-start gap-2">
                 <MapPin size={14} className="text-success shrink-0 mt-0.5" />
                 <span>Newtonweg 15, 8013 RD Zwolle</span>
@@ -111,7 +121,8 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/50">
-            © 2026 Smart Buy Store V.O.F. — KvK 42000760 — Alle rechten voorbehouden
+            © 2026 Smart Buy Store V.O.F. — KvK {settings.company_kvk || '42000760'}
+            {settings.company_btw && ` — BTW ${settings.company_btw}`} — Alle rechten voorbehouden
           </p>
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <CreditCard size={14} className="text-white/40" />

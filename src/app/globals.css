@@ -61,3 +61,22 @@
     overflow: hidden;
   }
 }
+
+/* Print: toon alleen de factuur, verberg admin-chrome (sidebar, knoppen) */
+@media print {
+  aside,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .invoice {
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+}

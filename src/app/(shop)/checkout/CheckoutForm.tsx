@@ -240,9 +240,9 @@ export function CheckoutForm({ prefill }: Props) {
           />
           <span>
             Ik ga akkoord met de{' '}
-            <Link href="/algemene-voorwaarden" className="text-primary hover:underline">algemene voorwaarden</Link>{' '}
+            <Link href="/voorwaarden" className="text-primary hover:underline">algemene voorwaarden</Link>{' '}
             en{' '}
-            <Link href="/privacyverklaring" className="text-primary hover:underline">privacyverklaring</Link>.
+            <Link href="/privacy" className="text-primary hover:underline">privacyverklaring</Link>.
           </span>
         </label>
 

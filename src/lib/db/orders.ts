@@ -48,6 +48,42 @@ export async function getAllOrdersForAdmin(opts?: { status?: OrderStatus; limit?
   return (data ?? []) as DbOrder[];
 }
 
+/** Orders waarvoor een factuur relevant is (betaald of verder in het traject). */
+const INVOICEABLE_STATUSES: OrderStatus[] = [
+  'paid', 'in_progress', 'planned_delivery', 'delivered', 'completed', 'refunded',
+];
+
+export async function getInvoiceOrders() {
+  const supabase = getSupabaseServer();
+  const { data, error } = await supabase
+    .from('sbs_orders')
+    .select('*')
+    .in('status', INVOICEABLE_STATUSES)
+    .order('paid_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.warn('getInvoiceOrders: falling back to []', error.message);
+    return [] as DbOrder[];
+  }
+  return (data ?? []) as DbOrder[];
+}
+
+/** Orders die nog bezorgd moeten worden — voor de bezorgplanning. */
+export async function getDeliveryOrders() {
+  const supabase = getSupabaseServer();
+  const { data, error } = await supabase
+    .from('sbs_orders')
+    .select('*')
+    .in('status', ['paid', 'in_progress', 'planned_delivery'])
+    .order('delivery_date', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true });
+  if (error) {
+    console.warn('getDeliveryOrders: falling back to []', error.message);
+    return [] as DbOrder[];
+  }
+  return (data ?? []) as DbOrder[];
+}
+
 export async function getOrderById(id: string) {
   const supabase = getSupabaseServer();
   const { data: order } = await supabase

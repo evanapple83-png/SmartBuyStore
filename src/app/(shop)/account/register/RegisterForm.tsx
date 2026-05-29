@@ -108,8 +108,8 @@ export function RegisterForm() {
         />
         <span>
           Ik ga akkoord met de{' '}
-          <a href="/algemene-voorwaarden" className="text-primary hover:underline">algemene voorwaarden</a> en{' '}
-          <a href="/privacyverklaring" className="text-primary hover:underline">privacyverklaring</a>.
+          <a href="/voorwaarden" className="text-primary hover:underline">algemene voorwaarden</a> en{' '}
+          <a href="/privacy" className="text-primary hover:underline">privacyverklaring</a>.
         </span>
       </label>
 

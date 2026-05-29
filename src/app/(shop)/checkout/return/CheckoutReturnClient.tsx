@@ -98,7 +98,7 @@ export function CheckoutReturnClient({ orderNumber }: { orderNumber: string }) {
         <p className="text-sm text-muted mb-6">
           Je betaling is geannuleerd of mislukt. Je bestelling <strong className="font-mono">{orderNumber}</strong> is niet doorgegaan.
         </p>
-        <Link href="/winkelmand" className="inline-flex items-center bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-[10px]">
+        <Link href="/winkelwagen" className="inline-flex items-center bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-[10px]">
           Opnieuw proberen
         </Link>
       </Frame>
