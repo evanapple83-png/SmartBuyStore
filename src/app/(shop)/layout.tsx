@@ -6,6 +6,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 import { CompareProvider } from '@/hooks/useCompare';
 import { CompareTray } from '@/components/compare/CompareTray';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { WishlistDrawer } from '@/components/wishlist/WishlistDrawer';
 
 /**
  * Shop layout — gedeelde chrome (USPBar + Header + Footer) voor alle
@@ -26,6 +27,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
           <Footer />
           <CartDrawer />
+          <WishlistDrawer />
           <CompareTray />
         </CompareProvider>
       </WishlistProvider>

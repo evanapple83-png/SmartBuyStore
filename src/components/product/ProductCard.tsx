@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 interface ProductCardProps {
   product: Product;
   onAddToCart?: (product: Product) => void;
-  onToggleWishlist?: (productId: string) => void;
+  onToggleWishlist?: (product: Product) => void;
   isInWishlist?: boolean;
 }
 
@@ -79,7 +79,7 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
         <button
           onClick={(e) => {
             e.preventDefault();
-            onToggleWishlist?.(product.id);
+            onToggleWishlist?.(product);
           }}
           className={cn(
             'absolute bottom-2 right-2 p-1.5 rounded-full bg-white/90 shadow-md transition-all duration-150 cursor-pointer',
@@ -148,16 +148,16 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
             }}
             disabled={!inCompare && !canAdd}
             className={cn(
-              'flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-[10px] border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
+              'flex items-center justify-center gap-1.5 w-full text-xs font-bold py-2.5 rounded-[10px] border-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
               inCompare
-                ? 'bg-primary/5 text-primary border-primary/40'
-                : 'text-foreground border-border hover:border-primary hover:text-primary hover:bg-primary/5'
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white text-primary border-primary/40 hover:border-primary hover:bg-primary/5'
             )}
             aria-pressed={inCompare}
             title={!inCompare && !canAdd ? 'Je kunt maximaal 4 producten vergelijken' : undefined}
           >
-            {inCompare ? <Check size={13} /> : <Scale size={13} />}
-            {inCompare ? 'In vergelijking' : 'Vergelijk'}
+            {inCompare ? <Check size={14} /> : <Scale size={14} />}
+            {inCompare ? 'In vergelijking' : 'Vergelijken'}
           </button>
         </div>
       </div>

@@ -18,7 +18,7 @@ const navLinks = [
 
 export function Header() {
   const { totalItems, openCart } = useCart();
-  const { count: wishlistCount } = useWishlist();
+  const { count: wishlistCount, open: openWishlist } = useWishlist();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -57,10 +57,10 @@ export function Header() {
               <span className="text-sm font-medium text-foreground">Klantenservice</span>
             </Link>
 
-            <Link
-              href="/verlanglijst"
+            <button
+              onClick={openWishlist}
               className="relative hidden sm:flex items-center p-2 rounded-[12px] hover:bg-background transition-colors cursor-pointer"
-              aria-label={`Verlanglijst${wishlistCount > 0 ? `, ${wishlistCount} producten` : ''}`}
+              aria-label={`Verlanglijst openen${wishlistCount > 0 ? `, ${wishlistCount} producten` : ''}`}
             >
               <Heart size={20} className="text-foreground" />
               {wishlistCount > 0 && (
@@ -68,7 +68,7 @@ export function Header() {
                   {wishlistCount > 9 ? '9+' : wishlistCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             <Link
               href="/account"

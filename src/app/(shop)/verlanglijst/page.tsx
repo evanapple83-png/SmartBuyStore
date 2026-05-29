@@ -1,10 +1,10 @@
-import { getVisibleProducts } from '@/lib/db/catalog';
-import { mapDbProducts } from '@/lib/db/product-mapper';
+import type { Metadata } from 'next';
 import { VerlanglijstClient } from './VerlanglijstClient';
 
-export const revalidate = 60;
+export const metadata: Metadata = {
+  title: 'Verlanglijst — Smart Buy Store',
+};
 
-export default async function VerlanglijstPage() {
-  const products = mapDbProducts(await getVisibleProducts());
-  return <VerlanglijstClient products={products} />;
+export default function VerlanglijstPage() {
+  return <VerlanglijstClient />;
 }
