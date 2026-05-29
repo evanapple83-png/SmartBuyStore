@@ -24,6 +24,7 @@ const infoLinks = [
   { href: '/account', label: 'Mijn bestellingen' },
   { href: '/privacy', label: 'Privacybeleid' },
   { href: '/voorwaarden', label: 'Algemene voorwaarden' },
+  { href: '/cookiebeleid', label: 'Cookiebeleid' },
 ];
 
 const paymentMethods = ['iDEAL', 'Visa', 'Mastercard', 'PayPal', 'Klarna', 'Afterpay', 'Maestro'];

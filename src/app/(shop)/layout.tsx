@@ -7,6 +7,7 @@ import { CompareProvider } from '@/hooks/useCompare';
 import { CompareTray } from '@/components/compare/CompareTray';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { WishlistDrawer } from '@/components/wishlist/WishlistDrawer';
+import { CookieConsent } from '@/components/legal/CookieConsent';
 
 /**
  * Shop layout — gedeelde chrome (USPBar + Header + Footer) voor alle
@@ -29,6 +30,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           <CartDrawer />
           <WishlistDrawer />
           <CompareTray />
+          <CookieConsent />
         </CompareProvider>
       </WishlistProvider>
     </CartProvider>
