@@ -5,6 +5,7 @@ import { CartProvider } from '@/hooks/useCart';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { CompareProvider } from '@/hooks/useCompare';
 import { CompareTray } from '@/components/compare/CompareTray';
+import { WishlistProvider } from '@/hooks/useWishlist';
 
 /**
  * Shop layout — gedeelde chrome (USPBar + Header + Footer) voor alle
@@ -18,14 +19,16 @@ import { CompareTray } from '@/components/compare/CompareTray';
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <CompareProvider>
-        <USPBar />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
-        <CompareTray />
-      </CompareProvider>
+      <WishlistProvider>
+        <CompareProvider>
+          <USPBar />
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
+          <CompareTray />
+        </CompareProvider>
+      </WishlistProvider>
     </CartProvider>
   );
 }

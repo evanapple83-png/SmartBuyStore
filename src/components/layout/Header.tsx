@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { Search, ShoppingCart, User, Menu, X, Zap, Headphones } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Zap, Headphones, Heart } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/hooks/useCart';
+import { useWishlist } from '@/hooks/useWishlist';
 import { SearchBox } from './SearchBox';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,7 @@ const navLinks = [
 
 export function Header() {
   const { totalItems, openCart } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -53,6 +55,19 @@ export function Header() {
             >
               <Headphones size={20} className="text-foreground" />
               <span className="text-sm font-medium text-foreground">Klantenservice</span>
+            </Link>
+
+            <Link
+              href="/verlanglijst"
+              className="relative hidden sm:flex items-center p-2 rounded-[12px] hover:bg-background transition-colors cursor-pointer"
+              aria-label={`Verlanglijst${wishlistCount > 0 ? `, ${wishlistCount} producten` : ''}`}
+            >
+              <Heart size={20} className="text-foreground" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-accent text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
+                </span>
+              )}
             </Link>
 
             <Link
@@ -137,6 +152,30 @@ export function Header() {
           >
             <Zap size={14} className="fill-accent" />
             Aanbiedingen
+          </Link>
+
+          <div className="border-t border-border my-2" />
+
+          <Link
+            href="/verlanglijst"
+            onClick={() => setMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-background rounded-[8px] transition-all duration-150 cursor-pointer"
+          >
+            <Heart size={16} />
+            Verlanglijst
+            {wishlistCount > 0 && (
+              <span className="ml-auto bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/account"
+            onClick={() => setMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-background rounded-[8px] transition-all duration-150 cursor-pointer"
+          >
+            <User size={16} />
+            Account
           </Link>
         </nav>
       )}

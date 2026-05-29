@@ -148,8 +148,10 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
             }}
             disabled={!inCompare && !canAdd}
             className={cn(
-              'flex items-center justify-center gap-1.5 text-xs font-semibold py-1 rounded-[10px] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
-              inCompare ? 'text-primary' : 'text-muted hover:text-primary'
+              'flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-[10px] border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
+              inCompare
+                ? 'bg-primary/5 text-primary border-primary/40'
+                : 'text-foreground border-border hover:border-primary hover:text-primary hover:bg-primary/5'
             )}
             aria-pressed={inCompare}
             title={!inCompare && !canAdd ? 'Je kunt maximaal 4 producten vergelijken' : undefined}
