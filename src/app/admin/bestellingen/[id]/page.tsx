@@ -80,6 +80,9 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               <tfoot className="bg-background">
                 <tr><td colSpan={3} className="px-4 py-2 text-right text-muted">Subtotaal excl. btw</td><td className="px-4 py-2 text-right tabular-nums">{euro(order.subtotal_excl_btw)}</td></tr>
                 <tr><td colSpan={3} className="px-4 py-2 text-right text-muted">Btw 21%</td><td className="px-4 py-2 text-right tabular-nums">{euro(order.btw_total)}</td></tr>
+                {order.discount_amount > 0 && (
+                  <tr><td colSpan={3} className="px-4 py-2 text-right text-muted">Korting{order.discount_code ? ` (${order.discount_code})` : ''}</td><td className="px-4 py-2 text-right tabular-nums">− {euro(order.discount_amount)}</td></tr>
+                )}
                 <tr><td colSpan={3} className="px-4 py-2 text-right text-muted">Bezorgkosten</td><td className="px-4 py-2 text-right tabular-nums">{order.delivery_cost > 0 ? euro(order.delivery_cost) : 'Gratis'}</td></tr>
                 <tr className="border-t-2 border-ink"><td colSpan={3} className="px-4 py-3 text-right font-bold">Totaal incl. btw</td><td className="px-4 py-3 text-right tabular-nums font-bold">{euro(order.total_incl_btw)}</td></tr>
               </tfoot>

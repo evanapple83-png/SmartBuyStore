@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getMollieClient, isMollieConfigured, getRedirectUrl, getWebhookUrl } from '@/lib/mollie/client';
+import { validateDiscountCode, incrementDiscountUse } from './discount-codes';
 import type { OrderStatus } from './orders';
 
 const BTW_RATE = 21;
@@ -107,7 +108,21 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const subtotal_excl_btw = +lines.reduce((s, l) => s + l.line_subtotal_excl_btw, 0).toFixed(2);
   const btw_total = +lines.reduce((s, l) => s + l.line_btw, 0).toFixed(2);
   const delivery_cost = DELIVERY_COST;
-  const total_incl_btw = +(subtotal_excl_btw + btw_total + delivery_cost).toFixed(2);
+  const goods_incl_btw = +(subtotal_excl_btw + btw_total).toFixed(2);
+
+  // Kortingscode server-side hervalideren (nooit het clientbedrag vertrouwen).
+  let discount_amount = 0;
+  let applied_discount_code: string | null = null;
+  if (input.discountCode?.trim()) {
+    const v = await validateDiscountCode(input.discountCode, goods_incl_btw);
+    if (!v.ok) {
+      return { ok: false, error: v.error };
+    }
+    discount_amount = v.discountAmount;
+    applied_discount_code = v.code;
+  }
+
+  const total_incl_btw = +Math.max(0, goods_incl_btw + delivery_cost - discount_amount).toFixed(2);
 
   // Maak order (via admin client — anon kan via RLS maar dit is robuuster)
   const admin = getSupabaseAdmin();
@@ -130,10 +145,10 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
       billing_address_snapshot: null,
       subtotal_excl_btw,
       btw_total,
-      discount_amount: 0,
+      discount_amount,
       delivery_cost,
       total_incl_btw,
-      discount_code: input.discountCode || null,
+      discount_code: applied_discount_code,
       notes_customer: input.notesCustomer || null,
     })
     .select('id, order_number')
@@ -154,6 +169,11 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
     // Cleanup: verwijder de order zodat er geen weeskinderen ontstaan
     await admin.from('sbs_orders').delete().eq('id', order.id);
     return { ok: false, error: 'Bestelregels konden niet worden opgeslagen.' };
+  }
+
+  // Kortingscode-gebruik registreren (best-effort, blokkeert de order niet).
+  if (applied_discount_code) {
+    await incrementDiscountUse(applied_discount_code);
   }
 
   // Mollie payment aanmaken (alleen als geconfigureerd)

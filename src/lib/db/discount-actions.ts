@@ -2,6 +2,18 @@
 
 import { revalidatePath } from 'next/cache';
 import { ensureAdminOrStaff } from './admin-guard';
+import { validateDiscountCode, type DiscountValidation } from './discount-codes';
+
+/**
+ * Client-facing wrapper: laat de checkout-UI een code valideren zonder de order
+ * te plaatsen. De échte korting wordt bij orderaanmaak opnieuw server-side berekend.
+ */
+export async function applyDiscountCode(
+  code: string,
+  subtotalInclBtw: number
+): Promise<DiscountValidation> {
+  return validateDiscountCode(code, subtotalInclBtw);
+}
 
 export async function upsertDiscountCode(
   formData: FormData

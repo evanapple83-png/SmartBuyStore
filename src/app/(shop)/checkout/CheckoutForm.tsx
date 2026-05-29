@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/hooks/useCart';
 import { createOrder, isSameDayEligible } from '@/lib/db/order-actions';
+import { applyDiscountCode } from '@/lib/db/discount-actions';
 
 function euro(n: number) {
   return `€ ${n.toFixed(2).replace('.', ',')}`;
@@ -32,6 +33,41 @@ export function CheckoutForm({ prefill }: Props) {
   const [acceptTerms, setAcceptTerms] = useState(false);
 
   const [sameDayChecked, setSameDayChecked] = useState<null | boolean>(null);
+
+  // Kortingscode
+  const [discountInput, setDiscountInput] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [applyingDiscount, setApplyingDiscount] = useState(false);
+
+  async function handleApplyDiscount() {
+    setDiscountError(null);
+    const code = discountInput.trim();
+    if (!code) { setDiscountError('Vul een kortingscode in.'); return; }
+    setApplyingDiscount(true);
+    try {
+      const result = await applyDiscountCode(code, totalPrice);
+      if (!result.ok) {
+        setAppliedDiscount(null);
+        setDiscountError(result.error);
+        return;
+      }
+      setAppliedDiscount({ code: result.code, amount: result.discountAmount });
+    } catch {
+      setDiscountError('Kortingscode kon niet worden gecontroleerd. Probeer het opnieuw.');
+    } finally {
+      setApplyingDiscount(false);
+    }
+  }
+
+  function removeDiscount() {
+    setAppliedDiscount(null);
+    setDiscountInput('');
+    setDiscountError(null);
+  }
+
+  const discountAmount = appliedDiscount?.amount ?? 0;
+  const grandTotal = Math.max(0, totalPrice - discountAmount);
 
   // Postcode-check on change
   async function handlePostalChange(value: string) {
@@ -85,6 +121,7 @@ export function CheckoutForm({ prefill }: Props) {
         deliveryMethod,
         deliveryDate: deliveryDate || undefined,
         notesCustomer: notes.trim() || undefined,
+        discountCode: appliedDiscount?.code || undefined,
         items: items.map((it) => ({
           productId: it.product.id,
           name: it.product.name,
@@ -268,14 +305,59 @@ export function CheckoutForm({ prefill }: Props) {
             ))}
           </div>
 
+          {/* Kortingscode */}
+          <div className="border-t border-border pt-3">
+            {appliedDiscount ? (
+              <div className="flex items-center justify-between gap-2 text-sm bg-emerald-50 border border-emerald-200 rounded-[8px] px-3 py-2">
+                <span className="text-emerald-800">
+                  Code <strong className="font-mono">{appliedDiscount.code}</strong> toegepast
+                </span>
+                <button
+                  type="button"
+                  onClick={removeDiscount}
+                  className="text-xs font-medium text-emerald-800 hover:underline"
+                >
+                  Verwijderen
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex gap-2">
+                  <input
+                    value={discountInput}
+                    onChange={(e) => setDiscountInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyDiscount(); } }}
+                    placeholder="Kortingscode"
+                    className={inputCls + ' flex-1 font-mono uppercase'}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyDiscount}
+                    disabled={applyingDiscount}
+                    className="px-4 text-sm font-semibold border border-border rounded-[10px] hover:bg-background disabled:opacity-50"
+                  >
+                    {applyingDiscount ? '...' : 'Toepassen'}
+                  </button>
+                </div>
+                {discountError && <p className="text-xs text-red-600 mt-1.5">{discountError}</p>}
+              </div>
+            )}
+          </div>
+
           <div className="border-t border-border pt-3 space-y-1 text-sm">
             <div className="flex justify-between"><span className="text-muted">Subtotaal</span><span className="tabular-nums">{euro(totalPrice)}</span></div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-emerald-700">
+                <span>Korting ({appliedDiscount?.code})</span>
+                <span className="tabular-nums">− {euro(discountAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between"><span className="text-muted">Bezorgkosten</span><span className="text-emerald-700">Gratis</span></div>
           </div>
 
           <div className="border-t border-border pt-3 flex justify-between">
             <span className="font-bold">Totaal incl. btw</span>
-            <span className="font-bold text-lg tabular-nums">{euro(totalPrice)}</span>
+            <span className="font-bold text-lg tabular-nums">{euro(grandTotal)}</span>
           </div>
 
           <button
