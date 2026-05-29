@@ -57,7 +57,7 @@ export default async function BevestigingPage({ searchParams }: { searchParams: 
       )}
 
       <p className="text-sm text-muted mb-8">
-        Heb je vragen? Mail naar info@smart-buy-store.nl of bel ons.
+        Heb je vragen? Mail naar info@sbsnl.nl.
       </p>
 
       <div className="flex flex-wrap justify-center gap-3">
