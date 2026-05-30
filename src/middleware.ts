@@ -83,15 +83,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match alles BEHALVE:
-     * - _next/static (statische assets)
-     * - _next/image (image optimalisatie)
-     * - favicon.ico
-     * - publieke statische bestanden in /public
-     * - /api/webhook/* (laten passeren zonder auth check)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|api/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  /*
+   * Middleware draait ALLEEN op de beschermde zones (/admin, /account).
+   * Publieke pagina's (homepage, producten, categorieën, content) doen géén
+   * Supabase auth-round-trip meer → fors snellere navigatie. Session-refresh
+   * gebeurt op deze routes + bij server actions, wat ruim volstaat.
+   */
+  matcher: ['/admin/:path*', '/account/:path*'],
 };

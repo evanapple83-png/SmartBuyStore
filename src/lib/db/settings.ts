@@ -1,4 +1,5 @@
-import { getSupabaseServer } from '@/lib/supabase/server';
+import { unstable_cache } from 'next/cache';
+import { getSupabasePublic } from '@/lib/supabase/server';
 
 /**
  * Winkelinstellingen (key-value) uit sbs_settings.
@@ -35,18 +36,28 @@ export const SETTINGS_DEFAULTS: StoreSettings = {
   invoice_footer: 'Bedankt voor je bestelling bij Smart Buy Store.',
 };
 
-export async function getStoreSettings(): Promise<StoreSettings> {
-  const supabase = getSupabaseServer();
-  try {
-    const { data, error } = await supabase.from('sbs_settings').select('key, value');
-    if (error) throw error;
-    const map: Record<string, string> = {};
-    for (const row of data ?? []) {
-      if (row.value != null) map[row.key as string] = row.value as string;
+/**
+ * Instellingen worden gecached (revalidate 5 min, tag 'store-settings') en via
+ * de cookie-loze publieke client gelezen. Zo blokkeren ze geen statische
+ * rendering en kosten ze niet bij elke pageload een DB-round-trip. Wijzigingen
+ * via updateStoreSettings roepen revalidateTag('store-settings') aan.
+ */
+export const getStoreSettings = unstable_cache(
+  async (): Promise<StoreSettings> => {
+    try {
+      const supabase = getSupabasePublic();
+      const { data, error } = await supabase.from('sbs_settings').select('key, value');
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const row of data ?? []) {
+        if (row.value != null) map[row.key as string] = row.value as string;
+      }
+      return { ...SETTINGS_DEFAULTS, ...map } as StoreSettings;
+    } catch (err) {
+      console.warn('getStoreSettings fallback (tabel ontbreekt?):', err);
+      return { ...SETTINGS_DEFAULTS };
     }
-    return { ...SETTINGS_DEFAULTS, ...map } as StoreSettings;
-  } catch (err) {
-    console.warn('getStoreSettings fallback (tabel ontbreekt?):', err);
-    return { ...SETTINGS_DEFAULTS };
-  }
-}
+  },
+  ['store-settings'],
+  { revalidate: 300, tags: ['store-settings'] }
+);

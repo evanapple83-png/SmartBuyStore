@@ -9,6 +9,13 @@ interface PageProps {
 
 export const revalidate = 60;
 
+// Pre-render alle zichtbare producten op build-tijd → direct uit cache/CDN.
+// Nieuwe producten renderen on-demand (ISR) en worden daarna gecachet.
+export async function generateStaticParams() {
+  const products = await getVisibleProducts();
+  return (products as any[]).map((p) => ({ slug: p.slug }));
+}
+
 export default async function ProductPage({ params }: PageProps) {
   const dbProduct = await getProductBySlug(params.slug);
   if (!dbProduct) notFound();

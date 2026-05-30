@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { ensureAdmin } from './admin-guard';
 import { SETTINGS_DEFAULTS } from './settings';
 
@@ -25,6 +25,7 @@ export async function updateStoreSettings(
   const { error } = await supabase.from('sbs_settings').upsert(rows, { onConflict: 'key' });
   if (error) return { ok: false, error: error.message };
 
+  revalidateTag('store-settings'); // gecachte settings verversen (footer/header/facturen)
   revalidatePath('/admin/instellingen');
   revalidatePath('/'); // footer gebruikt sommige waarden
   return { ok: true };

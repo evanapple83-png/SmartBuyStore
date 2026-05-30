@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { CatalogBrowser } from '@/components/product/CatalogBrowser';
-import { getCategoryBySlug, getVisibleProducts } from '@/lib/db/catalog';
+import { getCategoryBySlug, getVisibleProducts, getActiveCategories } from '@/lib/db/catalog';
 import { mapDbProducts } from '@/lib/db/product-mapper';
 
 interface PageProps {
@@ -8,6 +8,12 @@ interface PageProps {
 }
 
 export const revalidate = 60;
+
+// Pre-render alle actieve categorieën op build-tijd.
+export async function generateStaticParams() {
+  const cats = await getActiveCategories();
+  return (cats as any[]).map((c) => ({ slug: c.slug }));
+}
 
 export default async function CategoriePage({ params }: PageProps) {
   const category = await getCategoryBySlug(params.slug);

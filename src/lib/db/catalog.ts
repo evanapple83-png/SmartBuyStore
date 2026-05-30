@@ -2,7 +2,7 @@
  * Catalog data access — voor admin + publieke pagina's.
  * Gebruikt server-side Supabase client. RLS handelt zichtbaarheid af.
  */
-import { getSupabaseServer } from '@/lib/supabase/server';
+import { getSupabaseServer, getSupabasePublic } from '@/lib/supabase/server';
 import type { ProductAttributes } from '@/types/product';
 
 export type DbProduct = {
@@ -60,7 +60,7 @@ export async function getVisibleProducts(opts?: {
   onSale?: boolean;
   limit?: number;
 }) {
-  const supabase = getSupabaseServer();
+  const supabase = getSupabasePublic();
   let q = supabase
     .from('sbs_products')
     .select('*, brand:sbs_brands(slug, name), category:sbs_categories(slug, name)')
@@ -80,7 +80,7 @@ export async function getVisibleProducts(opts?: {
 }
 
 export async function getProductBySlug(slug: string) {
-  const supabase = getSupabaseServer();
+  const supabase = getSupabasePublic();
   const { data } = await supabase
     .from('sbs_products')
     .select('*, brand:sbs_brands(slug, name), category:sbs_categories(slug, name)')
@@ -91,7 +91,7 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function getActiveCategories() {
-  const supabase = getSupabaseServer();
+  const supabase = getSupabasePublic();
   const { data } = await supabase
     .from('sbs_categories')
     .select('*')
@@ -101,7 +101,7 @@ export async function getActiveCategories() {
 }
 
 export async function getCategoryBySlug(slug: string) {
-  const supabase = getSupabaseServer();
+  const supabase = getSupabasePublic();
   const { data } = await supabase
     .from('sbs_categories')
     .select('*')

@@ -34,6 +34,25 @@ export function getSupabaseServer() {
 }
 
 /**
+ * Cookie-LOZE publieke client (anon-rol). Gebruik voor publieke catalogus-/
+ * instellingen-reads. Omdat hij géén cookies() aanroept, blokkeert hij geen
+ * statische/ISR-rendering — shop-pagina's kunnen daardoor uit cache geserveerd
+ * worden i.p.v. bij elke request live te renderen. Leest alleen wat RLS aan
+ * anon toestaat (zichtbare producten, actieve categorieën, settings).
+ */
+let _publicClient: any = null;
+export function getSupabasePublic() {
+  if (_publicClient) return _publicClient;
+  const { createClient } = require('@supabase/supabase-js');
+  _publicClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+  return _publicClient;
+}
+
+/**
  * Service-role client — bypasst RLS. Alleen gebruiken in webhook-handlers,
  * cron-jobs, of bewust admin-side bewerkingen die anders niet door RLS heen komen.
  * NEVER expose this to client code.

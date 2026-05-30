@@ -1,59 +1,55 @@
 import type { Metadata } from 'next';
 import { ContentPage, ContentSection } from '@/components/legal/ContentPage';
 
-export const metadata: Metadata = { title: 'Garantie — Smart Buy Store' };
+export const metadata: Metadata = { title: 'Garantievoorwaarden — Smart Buy Store' };
 
 const ol = 'list-decimal pl-5 flex flex-col gap-1.5 marker:text-muted marker:font-semibold';
 
 export default function GarantiePage() {
   return (
     <ContentPage
-      title="Garantie"
-      intro="Op elk apparaat heb je wettelijke garantie — een deugdelijk product dat doet wat je er redelijkerwijs van mag verwachten. Daarnaast geldt vaak nog de garantie van de fabrikant."
+      title="Garantievoorwaarden"
+      intro="Op onze apparaten geldt de garantie van de fabrikant. Hieronder lees je wat hier wel en niet onder valt en wat wij van je vragen bij een garantieclaim."
     >
-      <ContentSection title="1. Wettelijke garantie (conformiteit)">
+      <ContentSection title="1. Wat valt onder garantie">
         <ol className={ol}>
-          <li>Je hebt altijd recht op een <strong>deugdelijk product</strong>: het moet de eigenschappen bezitten die je bij normaal gebruik redelijkerwijs mag verwachten.</li>
-          <li>Er is <strong>geen vaste termijn</strong>. Hoe lang de wettelijke garantie geldt, hangt af van onder meer het type product, de prijs en de verwachte levensduur. Bij duurdere apparaten is dit vaak (ruim) langer dan twee jaar.</li>
-          <li>Gaat een product binnen de verwachte levensduur kapot zonder dat dit jouw schuld is, dan lossen wij dit <strong>kosteloos</strong> op: repareren, vervangen of (gedeeltelijk) terugbetalen — binnen een redelijke termijn en zonder kosten voor reparatie, verzending, voorrijden of verwijdering.</li>
-          <li>Lukt herstel of vervanging niet of niet binnen een redelijke termijn, dan mag je de koop ontbinden en heb je recht op (gedeeltelijke) terugbetaling.</li>
-          <li><strong>Bewijslast:</strong> gaat er in het <strong>eerste jaar</strong> na aankoop iets mis, dan gaan we ervan uit dat het gebrek er bij levering al was — wij moeten dan aantonen dat het door verkeerd gebruik komt. Na het eerste jaar ligt de bewijslast bij jou.</li>
+          <li>De garantie dekt <strong>materiaal- en fabricagefouten</strong> die optreden bij normaal huishoudelijk gebruik, binnen de garantieperiode van de fabrikant.</li>
+          <li>Bij een terecht garantieberoep zorgen wij voor reparatie of vervanging. Wij bepalen welke oplossing wordt toegepast.</li>
         </ol>
       </ContentSection>
 
-      <ContentSection title="2. Verwachte levensduur per producttype">
-        <p>De wettelijke garantie kent geen vaste termijn. Onderstaande termijnen zijn <strong>indicatieve richtlijnen</strong> voor wat je gemiddeld mag verwachten; de werkelijke verwachting hangt af van prijs, model en gebruik.</p>
+      <ContentSection title="2. Wat valt niet onder garantie">
         <ol className={ol}>
-          <li><strong>Koelkasten &amp; vriezers</strong> — circa 10 jaar</li>
-          <li><strong>Wasmachines</strong> — circa 7 à 8 jaar (de ACM gaat ervan uit dat een wasmachine van € 400 minimaal 8 jaar meegaat)</li>
-          <li><strong>Wasdrogers</strong> — circa 7 jaar</li>
-          <li><strong>Vaatwassers</strong> — circa 7 à 8 jaar</li>
-          <li><strong>Ovens, kookplaten &amp; overige inbouwapparatuur</strong> — circa 10 jaar</li>
+          <li>Schade door verkeerd of onzorgvuldig gebruik, ongevallen, vallen, stoten, vocht, bliksem, over- of onderspanning, of onjuiste plaatsing.</li>
+          <li>Schade aan of slijtage van glas, email, kunststof onderdelen, verlichting, filters, manchetten, rubbers en andere aan slijtage onderhevige delen, tenzij sprake is van een aantoonbare fabricagefout.</li>
+          <li>Cosmetische schade (krassen, deuken, kleurverschil) die niet <strong>binnen 24 uur</strong> na levering is gemeld.</li>
+          <li>Gebreken ontstaan door zelf (de)monteren, aansluiten, aanpassen of repareren, of door reparatie door niet-erkende derden.</li>
+          <li>Gebreken die voortkomen uit de huisinstallatie (elektra, gas, water of afvoer) of uit externe oorzaken buiten het apparaat.</li>
+          <li>Normaal onderhoud, normale slijtage en verbruiksartikelen.</li>
+          <li>Niet-technische storingen, zoals verstoppingen, vergeten voorwerpen in de machine of onjuiste instellingen.</li>
+          <li>Apparaten die zakelijk of bovenmatig intensief zijn gebruikt, of die niet meer in het bezit zijn van de oorspronkelijke koper.</li>
         </ol>
       </ContentSection>
 
-      <ContentSection title="3. Fabrieksgarantie (extra)">
+      <ContentSection title="3. Aansluiting en installatie">
         <ol className={ol}>
-          <li>Naast je wettelijke garantie geldt op de meeste apparaten een <strong>fabrieks- of commerciële garantie</strong> van de fabrikant.</li>
-          <li>Deze garantie komt <strong>bovenop</strong> je wettelijke rechten en beperkt die nooit. Een mededeling als "2 jaar garantie" doet dus niets af aan je wettelijke garantie.</li>
-          <li>De termijn en voorwaarden verschillen per merk en model en staan vermeld bij de specificaties van het product.</li>
+          <li>Elektrische fornuizen, kookplaten en gasapparatuur dienen door een <strong>erkend installateur</strong> te worden aangesloten.</li>
+          <li>Sluit je een apparaat zelf aan en ontstaat hierdoor schade (bijvoorbeeld kortsluiting of brand), dan is dit voor eigen rekening en risico.</li>
         </ol>
       </ContentSection>
 
-      <ContentSection title="4. Zo vraag je garantie aan">
+      <ContentSection title="4. Een garantieclaim indienen">
         <ol className={ol}>
-          <li>Mail naar <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">info@sbsnl.nl</a> of bel ons, met je <strong>bestelnummer</strong> en een omschrijving van het probleem (en indien mogelijk een foto of video).</li>
-          <li>We beoordelen je melding en plannen reparatie, vervanging of terugbetaling in.</li>
-          <li>Voor herstel onder de wettelijke garantie betaal je niets.</li>
+          <li>Meld een storing via <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">info@sbsnl.nl</a> onder vermelding van je <strong>bestelnummer</strong>, een omschrijving van het probleem en — indien mogelijk — foto's of video.</li>
+          <li>Wij beoordelen de melding en plannen vervolgens onderzoek, reparatie of vervanging in.</li>
+          <li>Stellen wij vast dat er <strong>geen sprake is van een garantiegebrek</strong> (bijvoorbeeld door verkeerd gebruik of een van de uitsluitingen onder 2), dan kunnen wij onderzoeks- en voorrijkosten in rekening brengen.</li>
         </ol>
       </ContentSection>
 
-      <ContentSection title="Goed om te weten">
+      <ContentSection title="5. Slotbepaling">
         <p className="text-muted">
-          Deze informatie is gebaseerd op het Nederlandse consumentenrecht (onder meer artikel 7:17 van het
-          Burgerlijk Wetboek over conformiteit) en de uitleg van de Autoriteit Consument &amp; Markt (ACM / ConsuWijzer).
-          Je wettelijke rechten blijven altijd van toepassing, ook als een fabrieksgarantie is verlopen.
-          Laatst bijgewerkt: 30 mei 2026.
+          Deze voorwaarden laten je dwingendrechtelijke consumentenrechten onverlet. Voor een terecht en aantoonbaar
+          fabricage- of materiaalgebrek dragen wij uiteraard zorg. Laatst bijgewerkt: 30 mei 2026.
         </p>
       </ContentSection>
     </ContentPage>
