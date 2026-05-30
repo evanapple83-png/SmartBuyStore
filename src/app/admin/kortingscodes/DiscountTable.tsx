@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Tag } from 'lucide-react';
-import type { DiscountCode } from '@/lib/db/discount-codes';
+import type { DiscountCode, DiscountStat } from '@/lib/db/discount-codes';
 import { upsertDiscountCode, toggleDiscountActive, deleteDiscountCode } from '@/lib/db/discount-actions';
 
 function euro(n: number) {
@@ -18,8 +18,10 @@ function validityLabel(c: DiscountCode) {
   return `${formatDate(c.valid_from)} – ${formatDate(c.valid_until)}`;
 }
 
-export function DiscountTable({ codes }: { codes: DiscountCode[] }) {
+export function DiscountTable({ codes, stats }: { codes: DiscountCode[]; stats: Record<string, DiscountStat> }) {
   const router = useRouter();
+  // Meest effectieve code = meeste betaalde orders (dan hoogste omzet).
+  const bestCode = Object.values(stats || {}).sort((a, b) => b.orders - a.orders || b.revenue - a.revenue)[0]?.code;
   const [editing, setEditing] = useState<DiscountCode | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<DiscountCode | null>(null);
@@ -73,6 +75,8 @@ export function DiscountTable({ codes }: { codes: DiscountCode[] }) {
                 <th className="text-left px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Korting</th>
                 <th className="text-left px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Min. order</th>
                 <th className="text-left px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Gebruik</th>
+                <th className="text-right px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Betaald</th>
+                <th className="text-right px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Omzet</th>
                 <th className="text-left px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Geldigheid</th>
                 <th className="text-left px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Status</th>
                 <th className="text-right px-4 py-3 text-xs uppercase tracking-wide text-muted font-semibold">Actie</th>
@@ -81,10 +85,17 @@ export function DiscountTable({ codes }: { codes: DiscountCode[] }) {
             <tbody>
               {codes.map((c) => (
                 <tr key={c.id} className="border-b border-border last:border-b-0 hover:bg-background">
-                  <td className="px-4 py-3 font-mono font-semibold text-foreground">{c.code}</td>
+                  <td className="px-4 py-3 font-mono font-semibold text-foreground">
+                    {c.code}
+                    {bestCode && c.code.toUpperCase() === bestCode && (
+                      <span className="ml-2 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5 align-middle">Top</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{c.type === 'percentage' ? `${c.value}%` : euro(c.value)}</td>
                   <td className="px-4 py-3 text-muted">{c.min_order_total > 0 ? euro(c.min_order_total) : '—'}</td>
                   <td className="px-4 py-3 text-muted tabular-nums">{c.used_count}{c.max_uses != null ? ` / ${c.max_uses}` : ''}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{stats[c.code.toUpperCase()]?.orders || 0}</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-muted">{stats[c.code.toUpperCase()] ? euro(stats[c.code.toUpperCase()].revenue) : '—'}</td>
                   <td className="px-4 py-3 text-muted text-xs">{validityLabel(c)}</td>
                   <td className="px-4 py-3">
                     {c.is_active ? (

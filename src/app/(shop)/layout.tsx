@@ -8,6 +8,7 @@ import { CompareTray } from '@/components/compare/CompareTray';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { WishlistDrawer } from '@/components/wishlist/WishlistDrawer';
 import { CookieConsent } from '@/components/legal/CookieConsent';
+import { PageViewTracker } from '@/components/analytics/PageViewTracker';
 import { getStoreSettings } from '@/lib/db/settings';
 
 /**
@@ -33,6 +34,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
           <WishlistDrawer />
           <CompareTray />
           <CookieConsent />
+          <PageViewTracker />
         </CompareProvider>
       </WishlistProvider>
     </CartProvider>

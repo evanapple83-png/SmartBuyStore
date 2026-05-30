@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DbBrand, DbCategory, DbProduct } from '@/lib/db/catalog';
 import { createProduct, updateProduct } from '@/lib/db/product-actions';
+import { ImageUpload } from './ImageUpload';
 
 const ENERGY_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 
@@ -127,9 +128,9 @@ export function ProductForm({ mode, brands, categories, initial }: Props) {
 
       <div className="bg-surface border border-border rounded-[12px] p-6">
         <h2 className="text-sm font-semibold text-foreground mb-4">Foto's</h2>
-        <Field label="Hoofdafbeelding URL" name="image_primary" defaultValue={initial?.image_primary || ''} />
-        <div className="mt-3">
-          <Field label="Fallback afbeelding URL (Unsplash etc.)" name="image_fallback" defaultValue={initial?.image_fallback || ''} />
+        <ImageUpload defaultValue={initial?.image_primary || ''} />
+        <div className="mt-4">
+          <Field label="Fallback afbeelding URL (optioneel)" name="image_fallback" defaultValue={initial?.image_fallback || ''} hint="Wordt getoond als de hoofdafbeelding niet laadt." />
         </div>
       </div>
 

@@ -133,44 +133,64 @@ export async function getMyOrders() {
 
 // ─── Dashboard stats ─────────────────────────────────────────────────────────
 
-export async function getAdminDashboardStats() {
+export type DashboardStats = {
+  newOrdersToday: number;
+  deliveriesToday: number;
+  revenueExclToday: number;
+  unpaidOver24h: number;
+  revenueIncl7d: number;
+  revenueIncl30d: number;
+  orders30d: number;
+  aov30d: number;          // gemiddelde orderwaarde 30d (incl. btw)
+  openOrders: number;      // betaald maar nog niet bezorgd/afgerond
+};
+
+const PAID_STATUSES = ['paid', 'in_progress', 'planned_delivery', 'delivered', 'completed'];
+
+export async function getAdminDashboardStats(): Promise<DashboardStats> {
   const supabase = getSupabaseServer();
   const today = new Date().toISOString().slice(0, 10);
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since7 = new Date(Date.now() - 7 * 86400_000).toISOString();
+  const since30 = new Date(Date.now() - 30 * 86400_000).toISOString();
 
-  // Defensief: ontbrekende tabel mag dashboard niet crashen
+  const zero: DashboardStats = {
+    newOrdersToday: 0, deliveriesToday: 0, revenueExclToday: 0, unpaidOver24h: 0,
+    revenueIncl7d: 0, revenueIncl30d: 0, orders30d: 0, aov30d: 0, openOrders: 0,
+  };
+
   try {
-    const [newToday, deliverToday, paidToday, unpaidOld] = await Promise.all([
+    const [newToday, deliverToday, paidToday, unpaidOld, paid7d, paid30d, open] = await Promise.all([
+      supabase.from('sbs_orders').select('id', { count: 'exact', head: true }).gte('created_at', today),
       supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
-        .gte('created_at', today),
+        .eq('delivery_date', today).in('status', ['paid', 'in_progress', 'planned_delivery']),
+      supabase.from('sbs_orders').select('subtotal_excl_btw')
+        .in('status', PAID_STATUSES).gte('paid_at', today),
       supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
-        .eq('delivery_date', today)
+        .eq('status', 'pending_payment').lt('created_at', dayAgo),
+      supabase.from('sbs_orders').select('total_incl_btw').in('status', PAID_STATUSES).gte('paid_at', since7),
+      supabase.from('sbs_orders').select('total_incl_btw').in('status', PAID_STATUSES).gte('paid_at', since30),
+      supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
         .in('status', ['paid', 'in_progress', 'planned_delivery']),
-      supabase.from('sbs_orders').select('total_incl_btw,subtotal_excl_btw')
-        .eq('status', 'paid')
-        .gte('paid_at', today),
-      supabase.from('sbs_orders').select('id', { count: 'exact', head: true })
-        .eq('status', 'pending_payment')
-        .lt('created_at', dayAgo),
     ]);
 
-    if (newToday.error || deliverToday.error || paidToday.error || unpaidOld.error) {
-      throw newToday.error || deliverToday.error || paidToday.error || unpaidOld.error;
-    }
-
-    const revenueExclToday = (paidToday.data ?? []).reduce(
-      (sum, r: any) => sum + Number(r.subtotal_excl_btw || 0),
-      0
-    );
+    const sum = (rows: any[] | null, key: string) => (rows ?? []).reduce((s, r) => s + Number(r[key] || 0), 0);
+    const rev30 = sum(paid30d.data, 'total_incl_btw');
+    const n30 = (paid30d.data ?? []).length;
 
     return {
       newOrdersToday: newToday.count || 0,
       deliveriesToday: deliverToday.count || 0,
-      revenueExclToday,
+      revenueExclToday: sum(paidToday.data, 'subtotal_excl_btw'),
       unpaidOver24h: unpaidOld.count || 0,
+      revenueIncl7d: sum(paid7d.data, 'total_incl_btw'),
+      revenueIncl30d: rev30,
+      orders30d: n30,
+      aov30d: n30 > 0 ? +(rev30 / n30).toFixed(2) : 0,
+      openOrders: open.count || 0,
     };
   } catch (err) {
-    console.warn('Dashboard stats fallback (tabel ontbreekt of niet bereikbaar):', err);
-    return { newOrdersToday: 0, deliveriesToday: 0, revenueExclToday: 0, unpaidOver24h: 0 };
+    console.warn('Dashboard stats fallback:', err);
+    return zero;
   }
 }

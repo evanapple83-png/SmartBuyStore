@@ -100,6 +100,43 @@ export async function incrementDiscountUse(code: string): Promise<void> {
   }
 }
 
+export type DiscountStat = {
+  code: string;
+  orders: number;          // aantal betaalde orders met deze code
+  totalDiscount: number;   // totaal gegeven korting (€)
+  revenue: number;         // omzet incl. btw uit deze orders (€)
+};
+
+/**
+ * Effectiviteit per kortingscode, berekend uit de orders (geen extra opslag).
+ * Telt alleen orders die daadwerkelijk betaald/verder zijn. Key = code (UPPER).
+ */
+export async function getDiscountStats(): Promise<Record<string, DiscountStat>> {
+  const supabase = getSupabaseServer();
+  try {
+    const { data, error } = await supabase
+      .from('sbs_orders')
+      .select('discount_code, discount_amount, total_incl_btw, status')
+      .not('discount_code', 'is', null)
+      .in('status', ['paid', 'in_progress', 'planned_delivery', 'delivered', 'completed']);
+    if (error) throw error;
+    const out: Record<string, DiscountStat> = {};
+    for (const o of data ?? []) {
+      const code = String((o as any).discount_code || '').toUpperCase();
+      if (!code) continue;
+      const s = out[code] || { code, orders: 0, totalDiscount: 0, revenue: 0 };
+      s.orders += 1;
+      s.totalDiscount += Number((o as any).discount_amount || 0);
+      s.revenue += Number((o as any).total_incl_btw || 0);
+      out[code] = s;
+    }
+    return out;
+  } catch (err) {
+    console.warn('getDiscountStats fallback:', err);
+    return {};
+  }
+}
+
 /** Alle kortingscodes voor admin. Defensief: ontbrekende tabel → []. */
 export async function getDiscountCodes(): Promise<DiscountCode[]> {
   const supabase = getSupabaseServer();
