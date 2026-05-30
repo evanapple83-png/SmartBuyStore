@@ -71,6 +71,32 @@ export async function getPublishedReviews(productId: string): Promise<Review[]> 
   }
 }
 
+/** Recente gepubliceerde reviews + totaalaggregatie, voor de homepage. */
+export async function getHomepageReviews(limit = 3): Promise<{
+  avg: number; count: number;
+  items: { id: string; author_name: string; rating: number; title: string | null; body: string; is_verified: boolean; product_name: string | null }[];
+}> {
+  try {
+    const supabase = getSupabasePublic();
+    const { data, error } = await supabase
+      .from('sbs_reviews')
+      .select('id, author_name, rating, title, body, is_verified, created_at, sbs_products(name)')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    const all = data ?? [];
+    const count = all.length;
+    const avg = count ? +(all.reduce((s: number, r: any) => s + Number(r.rating), 0) / count).toFixed(1) : 0;
+    const items = all.slice(0, limit).map((r: any) => ({
+      id: r.id, author_name: r.author_name, rating: r.rating, title: r.title, body: r.body,
+      is_verified: r.is_verified, product_name: r.sbs_products?.name ?? null,
+    }));
+    return { avg, count, items };
+  } catch {
+    return { avg: 0, count: 0, items: [] };
+  }
+}
+
 /** Reviews voor moderatie (admin/staff). */
 export async function getReviewsForModeration(): Promise<(Review & { product_name?: string })[]> {
   try {
