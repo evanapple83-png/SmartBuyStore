@@ -1,8 +1,12 @@
 'use server';
 
-import { getSupabaseServer } from '@/lib/supabase/server';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { getStoreSettings } from '@/lib/db/settings';
 import { sendEmail } from '@/lib/mail/client';
+
+// Publieke formulieren draaien server-side en zijn al gevalideerd. We schrijven
+// via de service-role-client zodat ze niet afhangen van anon-RLS-policies
+// (consistent met createOrder/getCustomersForAdmin).
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -12,7 +16,7 @@ export async function subscribeNewsletter(rawEmail: string): Promise<{ ok: boole
   const email = rawEmail.trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return { ok: false, error: 'Vul een geldig e-mailadres in.' };
 
-  const supabase = getSupabaseServer();
+  const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('sbs_newsletter_subscribers').insert({ email, source: 'website' });
 
   // Al ingeschreven (unique violation) behandelen we als succes — geen info-lek, geen frustratie.
@@ -35,7 +39,7 @@ export async function sendContactMessage(formData: FormData): Promise<{ ok: bool
   if (!EMAIL_RE.test(email)) return { ok: false, error: 'Vul een geldig e-mailadres in.' };
   if (message.length < 10) return { ok: false, error: 'Schrijf een iets uitgebreider bericht (min. 10 tekens).' };
 
-  const supabase = getSupabaseServer();
+  const supabase = getSupabaseAdmin();
   const { error } = await supabase
     .from('sbs_contact_messages')
     .insert({ name, email, subject, message });

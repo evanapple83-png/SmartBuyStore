@@ -1,4 +1,4 @@
-import { getSupabaseServer } from '@/lib/supabase/server';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export type ContactMessage = {
   id: string;
@@ -10,9 +10,13 @@ export type ContactMessage = {
   created_at: string;
 };
 
-/** Contactberichten voor admin/staff. Defensief: ontbrekende tabel → []. */
+/**
+ * Contactberichten voor admin/staff. De /admin/berichten-route is al
+ * rol-gated via middleware; we lezen via de service-role-client zodat dit
+ * niet afhangt van RLS-leespolicies. Defensief: ontbrekende tabel → [].
+ */
 export async function getContactMessages(): Promise<ContactMessage[]> {
-  const supabase = getSupabaseServer();
+  const supabase = getSupabaseAdmin();
   try {
     const { data, error } = await supabase
       .from('sbs_contact_messages')
