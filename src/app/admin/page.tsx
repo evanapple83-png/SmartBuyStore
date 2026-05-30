@@ -1,9 +1,11 @@
 import Link from 'next/link';
-import { Plus, ShoppingBag, Eye, Users, TrendingUp, Tag, ArrowUpRight, BarChart3 } from 'lucide-react';
+import { Plus, ShoppingBag, Eye, Users, TrendingUp, Tag, BarChart3, BookOpen } from 'lucide-react';
 import { getAdminDashboardStats, getAllOrdersForAdmin } from '@/lib/db/orders';
 import { getIntelligence, prettyPath } from '@/lib/db/intelligence';
 import { getDiscountStats } from '@/lib/db/discount-codes';
 import { getLowStockProducts } from '@/lib/db/catalog';
+import { getOnboardingStatus } from '@/lib/db/onboarding';
+import { OnboardingChecklist } from './OnboardingChecklist';
 
 export const metadata = { title: 'Dashboard · Smart Buy Admin' };
 
@@ -24,12 +26,13 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  const [stats, recent, intel, discountStats, lowStock] = await Promise.all([
+  const [stats, recent, intel, discountStats, lowStock, onboarding] = await Promise.all([
     getAdminDashboardStats(),
     getAllOrdersForAdmin({ limit: 8 }),
     getIntelligence(),
     getDiscountStats(),
     getLowStockProducts(3),
+    getOnboardingStatus(),
   ]);
 
   const topCodes = Object.values(discountStats).sort((a, b) => b.orders - a.orders || b.revenue - a.revenue).slice(0, 5);
@@ -38,10 +41,17 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted">Overzicht van je webshop — omzet, bestellingen en bezoekers.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted">Overzicht van je webshop — omzet, bestellingen en bezoekers.</p>
+        </div>
+        <Link href="/admin/help" className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:bg-surface border border-border px-3 py-2 rounded-[10px] shrink-0">
+          <BookOpen size={15} /> Handleiding
+        </Link>
       </div>
+
+      <OnboardingChecklist steps={onboarding.steps} complete={onboarding.complete} />
 
       {/* ── KPI's ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

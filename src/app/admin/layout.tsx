@@ -16,6 +16,7 @@ import {
   UserCog,
   Truck,
   MessageSquare,
+  BookOpen,
   LogOut,
 } from 'lucide-react';
 
@@ -94,6 +95,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
 
         <div className="p-3 border-t border-border space-y-2">
+          <Link href="/admin/help" className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-foreground hover:bg-background rounded-[8px] transition-colors">
+            <BookOpen size={16} className="text-muted" />
+            Handleiding
+          </Link>
           <div className="px-3 py-2 text-xs">
             <div className="font-semibold text-foreground truncate">{profile?.full_name || user.email}</div>
             <div className="text-muted capitalize">{role}</div>
