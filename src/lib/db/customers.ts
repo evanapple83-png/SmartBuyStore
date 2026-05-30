@@ -46,6 +46,18 @@ export async function getCustomersForAdmin(): Promise<AdminCustomer[]> {
   }));
 }
 
+/** Actieve bezorgers — voor toewijzing in de bezorgplanning. */
+export async function getCouriers(): Promise<{ id: string; full_name: string | null }[]> {
+  const admin = getSupabaseAdmin();
+  const { data } = await admin
+    .from('sbs_profiles')
+    .select('id, full_name')
+    .eq('role', 'delivery')
+    .eq('is_active', true)
+    .order('full_name', { ascending: true });
+  return (data ?? []) as { id: string; full_name: string | null }[];
+}
+
 export async function getCustomerByIdForAdmin(id: string) {
   const admin = getSupabaseAdmin();
   const { data: profile } = await admin

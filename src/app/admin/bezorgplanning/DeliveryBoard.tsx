@@ -3,8 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Truck, MapPin, Calendar, Check, Clock } from 'lucide-react';
-import { setOrderDeliveryDate, updateOrderStatus } from '@/lib/db/order-actions';
+import { Truck, MapPin, Calendar, Check, Clock, User } from 'lucide-react';
+import { planDelivery, assignCourier, updateOrderStatus } from '@/lib/db/order-actions';
 
 type DeliveryOrder = {
   id: string;
@@ -12,10 +12,14 @@ type DeliveryOrder = {
   status: string;
   delivery_date: string | null;
   delivery_method: 'standard' | 'same_day';
+  delivery_user_id: string | null;
+  courier_name: string | null;
   customer: any;
   shipping: any;
   notes_customer: string | null;
 };
+
+type Courier = { id: string; full_name: string | null };
 
 const STATUS_LABELS: Record<string, string> = {
   paid: 'Betaald',
@@ -34,7 +38,15 @@ function formatDayHeading(date: string | null) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-export function DeliveryBoard({ orders, canPlan }: { orders: DeliveryOrder[]; canPlan: boolean }) {
+export function DeliveryBoard({
+  orders,
+  canPlan,
+  couriers,
+}: {
+  orders: DeliveryOrder[];
+  canPlan: boolean;
+  couriers: Courier[];
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +59,7 @@ export function DeliveryBoard({ orders, canPlan }: { orders: DeliveryOrder[]; ca
     groups.get(key)!.push(o);
   }
   const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
-    if (a === '') return 1; // ongepland onderaan
+    if (a === '') return 1;
     if (b === '') return -1;
     return a < b ? -1 : 1;
   });
@@ -56,7 +68,6 @@ export function DeliveryBoard({ orders, canPlan }: { orders: DeliveryOrder[]; ca
     setError(null);
     const order = orders.find((o) => o.id === id);
     start(async () => {
-      // Betaalde orders moeten eerst 'in behandeling' worden voordat ze bezorgd kunnen zijn.
       if (order?.status === 'paid' && canPlan) {
         const step = await updateOrderStatus(id, 'in_progress');
         if (!step.ok) { setError(step.error || 'Er ging iets mis'); router.refresh(); return; }
@@ -67,20 +78,21 @@ export function DeliveryBoard({ orders, canPlan }: { orders: DeliveryOrder[]; ca
     });
   }
 
-  function planDate(id: string, date: string) {
+  function plan(id: string, date: string) {
+    if (!date) return;
     setError(null);
-    const order = orders.find((o) => o.id === id);
     start(async () => {
-      const r = await setOrderDeliveryDate(id, date || null);
-      if (!r.ok) { setError(r.error || 'Er ging iets mis'); return; }
-      // Met een datum zetten we de status door naar 'ingepland' via geldige tussenstappen.
-      if (date && order && order.status !== 'planned_delivery') {
-        if (order.status === 'paid') {
-          const step = await updateOrderStatus(id, 'in_progress');
-          if (!step.ok) { setError(step.error || 'Er ging iets mis'); router.refresh(); return; }
-        }
-        await updateOrderStatus(id, 'planned_delivery', { note: `Ingepland op ${date}` }).catch(() => {});
-      }
+      const r = await planDelivery(id, date);
+      if (!r.ok) setError(r.error || 'Er ging iets mis');
+      router.refresh();
+    });
+  }
+
+  function setCourier(id: string, courierId: string) {
+    setError(null);
+    start(async () => {
+      const r = await assignCourier(id, courierId || null);
+      if (!r.ok) setError(r.error || 'Er ging iets mis');
       router.refresh();
     });
   }
@@ -89,7 +101,9 @@ export function DeliveryBoard({ orders, canPlan }: { orders: DeliveryOrder[]; ca
     return (
       <div className="bg-surface border border-border rounded-[12px] p-8 text-center text-sm text-muted">
         <Truck size={32} className="mx-auto mb-2 opacity-50" />
-        Geen openstaande bezorgingen. Alles is bezorgd of er zijn nog geen betaalde bestellingen.
+        {canPlan
+          ? 'Geen openstaande bezorgingen. Alles is bezorgd of er zijn nog geen betaalde bestellingen.'
+          : 'Er zijn momenteel geen bestellingen aan jou toegewezen.'}
       </div>
     );
   }
@@ -128,6 +142,11 @@ export function DeliveryBoard({ orders, canPlan }: { orders: DeliveryOrder[]; ca
                             <Clock size={11} /> Same-day
                           </span>
                         )}
+                        {o.courier_name && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-0.5">
+                            <User size={11} /> {o.courier_name}
+                          </span>
+                        )}
                       </div>
                       <div className="text-sm font-medium text-foreground mt-1.5">{o.customer?.name || '—'}</div>
                       <div className="flex items-start gap-1 text-xs text-muted mt-0.5">
@@ -139,18 +158,35 @@ export function DeliveryBoard({ orders, canPlan }: { orders: DeliveryOrder[]; ca
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
+                    <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto sm:min-w-[200px]">
                       {canPlan && (
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="date"
-                            defaultValue={o.delivery_date || ''}
-                            min={todayISO()}
-                            onChange={(e) => planDate(o.id, e.target.value)}
-                            disabled={pending}
-                            className="px-2.5 py-1.5 text-xs border border-border rounded-[8px] bg-background disabled:opacity-50"
-                          />
-                        </div>
+                        <>
+                          <label className="flex items-center gap-1.5 text-xs text-muted">
+                            <Calendar size={12} className="shrink-0" />
+                            <input
+                              type="date"
+                              defaultValue={o.delivery_date || ''}
+                              min={todayISO()}
+                              onChange={(e) => plan(o.id, e.target.value)}
+                              disabled={pending}
+                              className="flex-1 px-2.5 py-1.5 text-xs border border-border rounded-[8px] bg-background disabled:opacity-50"
+                            />
+                          </label>
+                          <label className="flex items-center gap-1.5 text-xs text-muted">
+                            <User size={12} className="shrink-0" />
+                            <select
+                              value={o.delivery_user_id || ''}
+                              onChange={(e) => setCourier(o.id, e.target.value)}
+                              disabled={pending}
+                              className="flex-1 px-2.5 py-1.5 text-xs border border-border rounded-[8px] bg-background disabled:opacity-50"
+                            >
+                              <option value="">Geen bezorger</option>
+                              {couriers.map((c) => (
+                                <option key={c.id} value={c.id}>{c.full_name || 'Bezorger'}</option>
+                              ))}
+                            </select>
+                          </label>
+                        </>
                       )}
                       <button
                         onClick={() => markDelivered(o.id)}

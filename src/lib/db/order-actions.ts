@@ -276,7 +276,7 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 export async function updateOrderStatus(
   orderId: string,
   toStatus: OrderStatus,
-  options?: { note?: string; allowManualPaid?: boolean }
+  options?: { note?: string; allowManualPaid?: boolean; skipEmail?: boolean }
 ): Promise<{ ok: boolean; error?: string }> {
   const supabase = getSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
@@ -357,7 +357,7 @@ export async function updateOrderStatus(
     cancelled: 'order_cancelled',
   };
   const emailEvent = EMAIL_FOR_STATUS[toStatus];
-  if (emailEvent) {
+  if (emailEvent && !options?.skipEmail) {
     await dispatchOrderEmail(orderId, emailEvent);
   }
 
@@ -394,6 +394,80 @@ export async function setOrderDeliveryDate(orderId: string, date: string | null)
     .eq('id', orderId);
   if (error) return { ok: false, error: error.message };
 
+  revalidatePath(`/admin/bestellingen/${orderId}`);
+  return { ok: true };
+}
+
+// ─── BEZORGPLANNING ──────────────────────────────────────────────────────────
+
+/**
+ * Plan een bezorging op een datum en verstuur de juiste klantmail:
+ *  - datum in de toekomst → "Je bezorging is gepland" (order_planned)
+ *  - datum is vandaag      → "Je bezorging is onderweg" (order_on_the_way)
+ * Zet ook de orderstatus door naar 'planned_delivery' via geldige tussenstappen.
+ */
+export async function planDelivery(orderId: string, date: string): Promise<{ ok: boolean; error?: string }> {
+  if (!date) return { ok: false, error: 'Kies een bezorgdatum.' };
+
+  // Datum zetten (bevat rolcheck admin/staff + verleden-check).
+  const dateRes = await setOrderDeliveryDate(orderId, date);
+  if (!dateRes.ok) return dateRes;
+
+  const supabase = getSupabaseServer();
+
+  // Status doorzetten naar 'planned_delivery' zonder de auto-mail (we sturen zelf de juiste).
+  const { data: cur } = await supabase.from('sbs_orders').select('status').eq('id', orderId).single();
+  if (cur?.status === 'paid') {
+    const r = await updateOrderStatus(orderId, 'in_progress', { skipEmail: true });
+    if (!r.ok) return r;
+  }
+  const { data: cur2 } = await supabase.from('sbs_orders').select('status').eq('id', orderId).single();
+  if (cur2?.status && cur2.status !== 'planned_delivery') {
+    const r = await updateOrderStatus(orderId, 'planned_delivery', { skipEmail: true, note: `Ingepland op ${date}` });
+    if (!r.ok) return r;
+  }
+
+  // Juiste mail op basis van de datum.
+  const today = new Date().toISOString().slice(0, 10);
+  await dispatchOrderEmail(orderId, date === today ? 'order_on_the_way' : 'order_planned');
+
+  revalidatePath('/admin/bezorgplanning');
+  revalidatePath(`/admin/bestellingen/${orderId}`);
+  revalidatePath('/account/bestellingen');
+  return { ok: true };
+}
+
+/** Wijs een bezorger toe aan een bestelling (of maak los met null). Admin/staff. */
+export async function assignCourier(orderId: string, courierId: string | null): Promise<{ ok: boolean; error?: string }> {
+  const supabase = getSupabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Niet ingelogd' };
+
+  const { data: profile } = await supabase
+    .from('sbs_profiles')
+    .select('role, is_active')
+    .eq('id', user.id)
+    .single();
+  if (!profile?.is_active || !['admin', 'staff'].includes(profile.role)) {
+    return { ok: false, error: 'Geen toestemming' };
+  }
+
+  // Controleer dat de toegewezen gebruiker echt een actieve bezorger is.
+  if (courierId) {
+    const { data: courier } = await supabase
+      .from('sbs_profiles')
+      .select('role, is_active')
+      .eq('id', courierId)
+      .single();
+    if (!courier || courier.role !== 'delivery' || !courier.is_active) {
+      return { ok: false, error: 'Ongeldige bezorger.' };
+    }
+  }
+
+  const { error } = await supabase.from('sbs_orders').update({ delivery_user_id: courierId }).eq('id', orderId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/admin/bezorgplanning');
   revalidatePath(`/admin/bestellingen/${orderId}`);
   return { ok: true };
 }

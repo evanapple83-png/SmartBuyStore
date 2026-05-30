@@ -13,6 +13,7 @@ export type DbOrder = {
   delivery_method: 'standard' | 'same_day';
   delivery_date: string | null;
   delivery_postcode: string | null;
+  delivery_user_id: string | null;
   customer_snapshot: { name: string; email: string; phone?: string };
   shipping_address_snapshot: any;
   billing_address_snapshot: any | null;
@@ -68,13 +69,16 @@ export async function getInvoiceOrders() {
   return (data ?? []) as DbOrder[];
 }
 
-/** Orders die nog bezorgd moeten worden — voor de bezorgplanning. */
-export async function getDeliveryOrders() {
+/** Orders die nog bezorgd moeten worden — voor de bezorgplanning.
+ *  assignedTo: filter op toegewezen bezorger (gebruikt voor de delivery-rol). */
+export async function getDeliveryOrders(opts?: { assignedTo?: string }) {
   const supabase = getSupabaseServer();
-  const { data, error } = await supabase
+  let q = supabase
     .from('sbs_orders')
     .select('*')
-    .in('status', ['paid', 'in_progress', 'planned_delivery'])
+    .in('status', ['paid', 'in_progress', 'planned_delivery']);
+  if (opts?.assignedTo) q = q.eq('delivery_user_id', opts.assignedTo);
+  const { data, error } = await q
     .order('delivery_date', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true });
   if (error) {

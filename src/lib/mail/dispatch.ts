@@ -13,6 +13,7 @@ export type OrderEmailEvent =
   | 'order_confirmation'
   | 'payment_received'
   | 'order_planned'
+  | 'order_on_the_way'
   | 'order_delivered'
   | 'order_cancelled';
 
