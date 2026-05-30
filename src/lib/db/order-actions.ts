@@ -92,7 +92,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const productIds = Array.from(new Set(input.items.map((it) => it.productId)));
   const { data: dbProducts, error: prodErr } = await admin
     .from('sbs_products')
-    .select('id, slug, name, short_name, current_price, btw_rate, in_stock, is_hidden, image_primary, image_fallback, sbs_brands(name)')
+    .select('id, slug, name, short_name, sku, current_price, btw_rate, in_stock, is_hidden, image_primary, image_fallback, sbs_brands(name)')
     .in('id', productIds);
 
   if (prodErr) {
@@ -131,6 +131,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
       product_snapshot: {
         name: p.name,
         slug: p.slug,
+        sku: p.sku ?? null,
         brand: p.sbs_brands?.name ?? it.brand,
         image: p.image_primary ?? p.image_fallback ?? it.image,
       },

@@ -53,6 +53,7 @@ export function ProductForm({ mode, brands, categories, initial }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Productnaam" name="name" required defaultValue={initial?.name || ''} />
           <Field label="Korte naam (voor lijsten)" name="short_name" defaultValue={initial?.short_name || ''} />
+          <Field label="Artikelnummer (SKU)" name="sku" defaultValue={initial?.sku || ''} hint="Eigen of fabrikant-artikelnummer. Optioneel, maar moet uniek zijn." />
           <Field label="Slug (URL)" name="slug" defaultValue={initial?.slug || ''} hint="Laat leeg om automatisch te genereren uit de naam" />
 
           <SelectField

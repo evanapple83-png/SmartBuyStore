@@ -54,7 +54,9 @@ export default async function AdminProductsPage() {
                     <Link href={`/admin/producten/${p.id}`} className="font-medium text-foreground hover:underline">
                       {p.short_name || p.name}
                     </Link>
-                    <div className="text-xs text-muted">{p.slug}</div>
+                    <div className="text-xs text-muted">
+                      {p.sku ? <span className="font-mono">{p.sku}</span> : <span className="opacity-60">geen art.nr</span>} · {p.slug}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-muted">{p.brand?.name || '—'}</td>
                   <td className="px-4 py-3 text-muted">{p.category?.name || '—'}</td>

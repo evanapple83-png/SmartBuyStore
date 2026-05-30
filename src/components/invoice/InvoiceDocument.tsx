@@ -91,9 +91,9 @@ export function InvoiceDocument({
             <tr key={it.id} className="border-b border-border">
               <td className="py-2.5">
                 <div className="font-medium">{it.product_snapshot?.name}</div>
-                {it.product_snapshot?.brand && (
-                  <div className="text-xs text-muted">{it.product_snapshot.brand}</div>
-                )}
+                <div className="text-xs text-muted">
+                  {[it.product_snapshot?.brand, it.product_snapshot?.sku && `art.nr ${it.product_snapshot.sku}`].filter(Boolean).join(' · ')}
+                </div>
               </td>
               <td className="py-2.5 text-right tabular-nums">{it.qty}</td>
               <td className="py-2.5 text-right tabular-nums">{euro(it.unit_price_excl_btw)}</td>

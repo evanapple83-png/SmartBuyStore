@@ -64,6 +64,7 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     slug,
     name,
     short_name: String(formData.get('short_name') || name).slice(0, 80),
+    sku: String(formData.get('sku') || '').trim() || null,
     brand_id,
     category_id,
     current_price,
@@ -82,7 +83,9 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
 
   const { data, error } = await supabase.from('sbs_products').insert(insert).select('id').single();
   if (error) {
-    if (error.code === '23505') return { ok: false, error: 'Slug bestaat al' };
+    if (error.code === '23505') {
+      return { ok: false, error: /sku/i.test(error.message) ? 'Dit artikelnummer is al in gebruik' : 'Slug bestaat al' };
+    }
     return { ok: false, error: error.message };
   }
   revalidatePath('/admin/producten');
@@ -110,6 +113,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     slug: String(formData.get('slug') || '').trim(),
     name,
     short_name: String(formData.get('short_name') || name).slice(0, 80),
+    sku: String(formData.get('sku') || '').trim() || null,
     brand_id: String(formData.get('brand_id') || '') || null,
     category_id: String(formData.get('category_id') || '') || null,
     current_price,
@@ -127,7 +131,12 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
   };
 
   const { error } = await supabase.from('sbs_products').update(update).eq('id', id);
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    if (error.code === '23505') {
+      return { ok: false, error: /sku/i.test(error.message) ? 'Dit artikelnummer is al in gebruik' : 'Slug bestaat al' };
+    }
+    return { ok: false, error: error.message };
+  }
 
   revalidatePath('/admin/producten');
   revalidatePath(`/admin/producten/${id}`);

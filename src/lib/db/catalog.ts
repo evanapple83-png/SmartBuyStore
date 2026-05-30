@@ -10,6 +10,7 @@ export type DbProduct = {
   slug: string;
   name: string;
   short_name: string | null;
+  sku: string | null;
   brand_id: string | null;
   category_id: string | null;
   current_price: number;
