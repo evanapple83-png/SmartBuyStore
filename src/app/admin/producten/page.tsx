@@ -1,14 +1,20 @@
 import Link from 'next/link';
-import { Plus, Eye, EyeOff } from 'lucide-react';
+import { Plus, Eye, EyeOff, Upload } from 'lucide-react';
 import { getAllProductsForAdmin } from '@/lib/db/catalog';
 import { ProductRowActions } from './ProductRowActions';
+import { AdminListSearch } from '../AdminListSearch';
 
 export const metadata = { title: 'Producten · Admin' };
 
-export default async function AdminProductsPage() {
-  const products = await getAllProductsForAdmin();
+export default async function AdminProductsPage({ searchParams }: { searchParams: { q?: string } }) {
+  const all = await getAllProductsForAdmin();
+  const q = (searchParams.q || '').trim().toLowerCase();
+  const products = q
+    ? (all as any[]).filter((p) =>
+        [p.name, p.short_name, p.sku, p.slug, p.brand?.name].filter(Boolean).some((v: string) => String(v).toLowerCase().includes(q)))
+    : all;
 
-  const visible = products.filter((p: any) => !p.is_hidden).length;
+  const visible = (products as any[]).filter((p: any) => !p.is_hidden).length;
   const hidden = products.length - visible;
 
   return (
@@ -20,19 +26,29 @@ export default async function AdminProductsPage() {
             {products.length} totaal · {visible} zichtbaar · {hidden} verborgen
           </p>
         </div>
-        <Link
-          href="/admin/producten/nieuw"
-          className="inline-flex items-center gap-2 bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-[10px] hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={16} />
-          Nieuw product
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/producten/import"
+            className="inline-flex items-center gap-2 bg-surface border border-border text-foreground text-sm font-semibold px-4 py-2.5 rounded-[10px] hover:bg-background transition-colors"
+          >
+            <Upload size={16} /> Importeren
+          </Link>
+          <Link
+            href="/admin/producten/nieuw"
+            className="inline-flex items-center gap-2 bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-[10px] hover:bg-primary/90 transition-colors"
+          >
+            <Plus size={16} />
+            Nieuw product
+          </Link>
+        </div>
       </div>
+
+      <AdminListSearch placeholder="Zoek op naam, artikelnummer of merk..." />
 
       <div className="bg-surface border border-border rounded-[12px] overflow-hidden">
         {products.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted">
-            Nog geen producten. Klik op <strong>Nieuw product</strong> om er één toe te voegen.
+            {q ? 'Geen producten gevonden voor je zoekopdracht.' : <>Nog geen producten. Klik op <strong>Nieuw product</strong> om er één toe te voegen.</>}
           </div>
         ) : (
           <table className="w-full text-sm">

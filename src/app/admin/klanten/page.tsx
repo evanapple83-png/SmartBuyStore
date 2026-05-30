@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getCustomersForAdmin } from '@/lib/db/customers';
+import { AdminListSearch } from '../AdminListSearch';
 
 export const metadata = { title: 'Klanten · Admin' };
 
@@ -8,11 +9,16 @@ function formatDate(s: string | null) {
   return new Date(s).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default async function AdminCustomersPage() {
+export default async function AdminCustomersPage({ searchParams }: { searchParams: { q?: string } }) {
   const all = await getCustomersForAdmin();
+  const q = (searchParams.q || '').trim().toLowerCase();
   // Sluit admin/staff/delivery uit — dit overzicht is voor echte klanten
-  const customers = all.filter((c) => c.role === 'customer');
+  let customers = all.filter((c) => c.role === 'customer');
   const teamMembers = all.filter((c) => c.role !== 'customer');
+  if (q) {
+    customers = customers.filter((c) =>
+      [c.full_name, c.email, c.phone].filter(Boolean).some((v) => String(v).toLowerCase().includes(q)));
+  }
 
   return (
     <div>
@@ -27,9 +33,11 @@ export default async function AdminCustomersPage() {
         </p>
       </div>
 
+      <AdminListSearch placeholder="Zoek op naam, e-mail of telefoon..." />
+
       <div className="bg-surface border border-border rounded-[12px] overflow-hidden">
         {customers.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted">Nog geen klantaccounts.</div>
+          <div className="p-8 text-center text-sm text-muted">{q ? 'Geen klanten gevonden.' : 'Nog geen klantaccounts.'}</div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-background border-b border-border">

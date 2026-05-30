@@ -1,7 +1,19 @@
 import Link from 'next/link';
-import { getAllOrdersForAdmin } from '@/lib/db/orders';
+import { getAllOrdersForAdmin, type OrderStatus } from '@/lib/db/orders';
+import { AdminListSearch } from '../AdminListSearch';
 
 export const metadata = { title: 'Bestellingen · Admin' };
+
+const STATUS_FILTER_OPTIONS = [
+  { value: 'pending_payment', label: 'Wacht op betaling' },
+  { value: 'paid', label: 'Betaald' },
+  { value: 'in_progress', label: 'In behandeling' },
+  { value: 'planned_delivery', label: 'Ingepland' },
+  { value: 'delivered', label: 'Bezorgd' },
+  { value: 'completed', label: 'Afgerond' },
+  { value: 'cancelled', label: 'Geannuleerd' },
+  { value: 'refunded', label: 'Terugbetaald' },
+];
 
 const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   pending_payment: { label: 'Wacht op betaling', cls: 'bg-amber-50 border-amber-200 text-amber-800' },
@@ -21,15 +33,25 @@ function formatDate(s: string) {
   return new Date(s).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default async function AdminOrdersPage() {
-  const orders = await getAllOrdersForAdmin();
+export default async function AdminOrdersPage({ searchParams }: { searchParams: { q?: string; status?: string } }) {
+  const status = searchParams.status as OrderStatus | undefined;
+  const all = await getAllOrdersForAdmin(status ? { status } : undefined);
+  const q = (searchParams.q || '').trim().toLowerCase();
+  const orders = q
+    ? all.filter((o) => {
+        const c = o.customer_snapshot as any;
+        return [o.order_number, c?.name, c?.email].filter(Boolean).some((v: string) => String(v).toLowerCase().includes(q));
+      })
+    : all;
 
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Bestellingen</h1>
-        <p className="text-sm text-muted">{orders.length} bestellingen totaal</p>
+        <p className="text-sm text-muted">{orders.length} bestelling{orders.length === 1 ? '' : 'en'}{q || status ? ' gevonden' : ' totaal'}</p>
       </div>
+
+      <AdminListSearch placeholder="Zoek op bestelnr, naam of e-mail..." statusOptions={STATUS_FILTER_OPTIONS} />
 
       <div className="bg-surface border border-border rounded-[12px] overflow-hidden">
         {orders.length === 0 ? (
