@@ -19,6 +19,7 @@ export type StoreSettings = {
   company_btw: string;
   company_iban: string;
   invoice_footer: string;
+  return_fee_large: string; // retour-/afhandelvergoeding groot witgoed (euro, als tekst)
 };
 
 export const SETTINGS_DEFAULTS: StoreSettings = {
@@ -34,6 +35,7 @@ export const SETTINGS_DEFAULTS: StoreSettings = {
   company_btw: '',
   company_iban: '',
   invoice_footer: 'Bedankt voor je bestelling bij Smart Buy Store.',
+  return_fee_large: '',
 };
 
 /**

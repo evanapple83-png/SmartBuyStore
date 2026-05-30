@@ -28,5 +28,6 @@ export async function updateStoreSettings(
   revalidateTag('store-settings'); // gecachte settings verversen (footer/header/facturen)
   revalidatePath('/admin/instellingen');
   revalidatePath('/'); // footer gebruikt sommige waarden
+  revalidatePath('/retour'); // retourvergoeding staat op deze pagina
   return { ok: true };
 }

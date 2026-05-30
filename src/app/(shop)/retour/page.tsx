@@ -1,11 +1,20 @@
 import type { Metadata } from 'next';
 import { ContentPage, ContentSection } from '@/components/legal/ContentPage';
+import { getStoreSettings } from '@/lib/db/settings';
 
 export const metadata: Metadata = { title: 'Retourvoorwaarden — Smart Buy Store' };
 
 const ol = 'list-decimal pl-5 flex flex-col gap-1.5 marker:text-muted marker:font-semibold';
 
-export default function RetourPage() {
+function formatFee(raw: string): string | null {
+  const n = Number(String(raw).replace(',', '.').replace(/[^0-9.]/g, ''));
+  if (!raw || isNaN(n) || n <= 0) return null;
+  return `€ ${n.toFixed(2).replace('.', ',')}`;
+}
+
+export default async function RetourPage() {
+  const settings = await getStoreSettings();
+  const fee = formatFee(settings.return_fee_large);
   return (
     <ContentPage
       title="Retourvoorwaarden"
@@ -32,7 +41,7 @@ export default function RetourPage() {
       <ContentSection title="3. Kosten van het retourneren">
         <ol className={ol}>
           <li>De kosten en het risico van de retourzending of het ophalen zijn <strong>voor jouw rekening</strong>.</li>
-          <li>Voor groot witgoed brengen wij een <strong>retour- en afhandelvergoeding</strong> in rekening. Het bedrag melden we je vooraf bij de aanmelding.</li>
+          <li>Voor groot witgoed brengen wij een <strong>retour- en afhandelvergoeding</strong>{fee ? <> van <strong>{fee}</strong></> : ''} in rekening{fee ? '' : '; het bedrag melden we je vooraf bij de aanmelding'}.</li>
           <li>Retourneer je slechts een deel van je bestelling, dan worden de oorspronkelijke bezorgkosten niet vergoed.</li>
         </ol>
       </ContentSection>

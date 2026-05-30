@@ -58,6 +58,15 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
         <Field label="Voettekst op factuur" name="invoice_footer" defaultValue={settings.invoice_footer} />
       </Section>
 
+      <Section title="Retouren">
+        <Field
+          label="Retour-/afhandelvergoeding groot witgoed (€)"
+          name="return_fee_large"
+          defaultValue={settings.return_fee_large}
+          hint="Bijv. 95. Dit bedrag toont op de retourpagina. Laat leeg om in plaats daarvan 'bedrag melden we vooraf' te tonen."
+        />
+      </Section>
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-[8px] p-3 text-sm">{error}</div>
       )}
