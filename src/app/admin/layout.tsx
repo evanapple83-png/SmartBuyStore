@@ -23,6 +23,10 @@ import {
  * voor defense-in-depth en om rol-specifieke menu's te tonen.
  */
 
+// Admin-paneel toont altijd live data — nooit gecachte gebruikers/orders/etc.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 type Role = 'admin' | 'staff' | 'delivery';
 
 const ALL_LINKS: { href: string; label: string; icon: any; roles: Role[] }[] = [
