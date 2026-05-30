@@ -11,6 +11,9 @@ interface StarRatingProps {
 export function StarRating({ rating, reviewCount, size = 'sm', className }: StarRatingProps) {
   const iconSize = size === 'sm' ? 12 : 16;
 
+  // Geen verzonnen sterren: tonen pas zodra er echte reviews zijn.
+  if (!reviewCount || reviewCount < 1) return null;
+
   return (
     <div className={cn('flex items-center gap-1', className)}>
       <div className="flex items-center gap-0.5">

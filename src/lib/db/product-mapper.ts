@@ -15,8 +15,10 @@ export function mapDbProduct(row: any): Product {
     currentPrice: Number(row.current_price),
     originalPrice: row.original_price != null ? Number(row.original_price) : null,
     energyLabel: row.energy_label || 'A',
-    rating: Number(row.rating ?? 0),
-    reviewCount: row.review_count ?? 0,
+    // Reviews komen uit de echte sbs_reviews-tabel (geen verzonnen scores meer).
+    // Lijsten/detail verrijken dit nadien met de werkelijke aggregatie.
+    rating: 0,
+    reviewCount: 0,
     inStock: !!row.in_stock,
     isSameDayDelivery: !!row.is_same_day_delivery,
     isNew: !!row.is_new,

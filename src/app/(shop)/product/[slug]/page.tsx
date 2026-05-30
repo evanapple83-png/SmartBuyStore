@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getProductBySlug, getVisibleProducts } from '@/lib/db/catalog';
 import { mapDbProduct, mapDbProducts } from '@/lib/db/product-mapper';
+import { getReviewAggregate, getReviewAggregates, getPublishedReviews, getReviewEligibility } from '@/lib/db/reviews';
 import { ProductDetail } from './ProductDetail';
 
 interface PageProps {
@@ -26,5 +27,19 @@ export default async function ProductPage({ params }: PageProps) {
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
 
-  return <ProductDetail product={product} related={related} />;
+  // Echte reviews (cookie-loos → pagina blijft statisch). Eligibility wordt
+  // server-side in de submit-actie afgehandeld, niet hier.
+  const [agg, reviews, relAgg] = await Promise.all([
+    getReviewAggregate(product.id),
+    getPublishedReviews(product.id),
+    getReviewAggregates(related.map((r) => r.id)),
+  ]);
+  product.rating = agg.avg;
+  product.reviewCount = agg.count;
+  for (const r of related) {
+    const a = relAgg.get(r.id);
+    if (a) { r.rating = a.avg; r.reviewCount = a.count; }
+  }
+
+  return <ProductDetail product={product} related={related} reviews={reviews} />;
 }

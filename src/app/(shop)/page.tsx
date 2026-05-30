@@ -9,11 +9,12 @@ import { ReviewsSection } from '@/components/home/ReviewsSection';
 import { NewsletterSection } from '@/components/home/NewsletterSection';
 import { getVisibleProducts } from '@/lib/db/catalog';
 import { mapDbProducts } from '@/lib/db/product-mapper';
+import { enrichProductRatings } from '@/lib/db/reviews';
 
 export const revalidate = 60; // ISR: ververs max elke minuut
 
 export default async function HomePage() {
-  const products = mapDbProducts(await getVisibleProducts());
+  const products = await enrichProductRatings(mapDbProducts(await getVisibleProducts()));
 
   return (
     <>

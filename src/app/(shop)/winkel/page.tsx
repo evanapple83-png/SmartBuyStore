@@ -1,11 +1,12 @@
 import { CatalogBrowser } from '@/components/product/CatalogBrowser';
 import { getVisibleProducts } from '@/lib/db/catalog';
 import { mapDbProducts } from '@/lib/db/product-mapper';
+import { enrichProductRatings } from '@/lib/db/reviews';
 
 export const revalidate = 60;
 
 export default async function WinkelPage() {
-  const products = mapDbProducts(await getVisibleProducts());
+  const products = await enrichProductRatings(mapDbProducts(await getVisibleProducts()));
   return (
     <CatalogBrowser
       products={products}

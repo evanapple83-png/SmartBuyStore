@@ -18,7 +18,8 @@ import { StarRating } from '@/components/ui/StarRating';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { ProductGallery } from '@/components/product/ProductGallery';
 import { PostcodeChecker } from '@/components/product/PostcodeChecker';
-import { ReviewSummary } from '@/components/product/ReviewSummary';
+import { ProductReviews } from '@/components/product/ProductReviews';
+import type { Review } from '@/lib/db/reviews';
 import { Breadcrumbs } from '@/components/product/Breadcrumbs';
 import { useCart } from '@/hooks/useCart';
 import { formatPriceShort } from '@/lib/price';
@@ -29,6 +30,7 @@ import { cn } from '@/lib/utils';
 interface ProductDetailProps {
   product: Product;
   related: Product[];
+  reviews: Review[];
 }
 
 const trustList = [
@@ -69,7 +71,7 @@ const faqs = [
   },
 ];
 
-export function ProductDetail({ product, related }: ProductDetailProps) {
+export function ProductDetail({ product, related, reviews }: ProductDetailProps) {
   const { addToCart } = useCart();
   const [cartState, setCartState] = useState<'idle' | 'loading' | 'success'>('idle');
   const keySpecs = productKeySpecs(product);
@@ -252,9 +254,13 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
 
       {/* ── Reviews ── */}
       <Section title="Reviews" id="reviews">
-        <div className="max-w-3xl">
-          <ReviewSummary rating={product.rating} reviewCount={product.reviewCount} />
-        </div>
+        <ProductReviews
+          productId={product.id}
+          productSlug={product.slug}
+          avg={product.rating}
+          count={product.reviewCount}
+          reviews={reviews}
+        />
       </Section>
 
       {/* ── FAQ ── */}

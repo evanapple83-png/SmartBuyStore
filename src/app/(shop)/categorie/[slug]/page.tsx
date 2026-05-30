@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { CatalogBrowser } from '@/components/product/CatalogBrowser';
 import { getCategoryBySlug, getVisibleProducts, getActiveCategories } from '@/lib/db/catalog';
 import { mapDbProducts } from '@/lib/db/product-mapper';
+import { enrichProductRatings } from '@/lib/db/reviews';
 
 interface PageProps {
   params: { slug: string };
@@ -19,7 +20,7 @@ export default async function CategoriePage({ params }: PageProps) {
   const category = await getCategoryBySlug(params.slug);
   if (!category) notFound();
 
-  const categoryProducts = mapDbProducts(await getVisibleProducts({ categorySlug: params.slug }));
+  const categoryProducts = await enrichProductRatings(mapDbProducts(await getVisibleProducts({ categorySlug: params.slug })));
 
   return (
     <CatalogBrowser
