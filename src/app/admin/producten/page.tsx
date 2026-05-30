@@ -69,13 +69,17 @@ export default async function AdminProductsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {p.in_stock ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                        Op voorraad
+                    {(p.stock_count ?? 0) <= 0 ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                        Uitverkocht
+                      </span>
+                    ) : (p.stock_count ?? 0) <= 3 ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                        Nog {p.stock_count}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted bg-background border border-border rounded-full px-2 py-0.5">
-                        Niet op voorraad
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                        {p.stock_count} op voorraad
                       </span>
                     )}
                   </td>

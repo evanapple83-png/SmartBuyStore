@@ -3,6 +3,7 @@ import { Plus, ShoppingBag, Eye, Users, TrendingUp, Tag, ArrowUpRight, BarChart3
 import { getAdminDashboardStats, getAllOrdersForAdmin } from '@/lib/db/orders';
 import { getIntelligence, prettyPath } from '@/lib/db/intelligence';
 import { getDiscountStats } from '@/lib/db/discount-codes';
+import { getLowStockProducts } from '@/lib/db/catalog';
 
 export const metadata = { title: 'Dashboard · Smart Buy Admin' };
 
@@ -23,11 +24,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  const [stats, recent, intel, discountStats] = await Promise.all([
+  const [stats, recent, intel, discountStats, lowStock] = await Promise.all([
     getAdminDashboardStats(),
     getAllOrdersForAdmin({ limit: 8 }),
     getIntelligence(),
     getDiscountStats(),
+    getLowStockProducts(3),
   ]);
 
   const topCodes = Object.values(discountStats).sort((a, b) => b.orders - a.orders || b.revenue - a.revenue).slice(0, 5);
@@ -123,6 +125,27 @@ export default async function AdminDashboardPage() {
           </div>
         )}
       </section>
+
+      {/* ── Lage voorraad ── */}
+      {lowStock.length > 0 && (
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <ShoppingBag size={18} className="text-amber-600" />
+            <h2 className="text-lg font-bold text-foreground">Lage voorraad</h2>
+            <span className="text-xs text-muted">{lowStock.length} product(en) ≤ 3 stuks</span>
+          </div>
+          <div className="bg-surface border border-border rounded-[12px] p-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {(lowStock as any[]).map((p) => (
+              <Link key={p.id} href={`/admin/producten/${p.id}`} className="flex items-center justify-between gap-2 text-sm px-3 py-2 rounded-[8px] border border-border hover:bg-background">
+                <span className="truncate text-foreground">{p.short_name || p.name}</span>
+                <span className={`tabular-nums text-xs font-semibold shrink-0 ${p.stock_count <= 0 ? 'text-red-700' : 'text-amber-700'}`}>
+                  {p.stock_count <= 0 ? 'uitverkocht' : `nog ${p.stock_count}`}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Kortingscode-effectiviteit ── */}
       <section>

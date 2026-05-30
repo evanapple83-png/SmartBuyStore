@@ -137,8 +137,18 @@ export function ProductForm({ mode, brands, categories, initial }: Props) {
 
       <div className="bg-surface border border-border rounded-[12px] p-6">
         <h2 className="text-sm font-semibold text-foreground mb-4">Voorraad &amp; levering</h2>
+        <div className="max-w-xs mb-4">
+          <Field
+            label="Voorraad (aantal)"
+            name="stock_count"
+            type="number"
+            min="0"
+            step="1"
+            defaultValue={(initial?.stock_count ?? 0).toString()}
+            hint="Wordt automatisch afgeboekt bij verkoop. Bij 0 toont het product als uitverkocht."
+          />
+        </div>
         <div className="space-y-3">
-          <Checkbox label="Op voorraad" name="in_stock" defaultChecked={initial?.in_stock ?? true} />
           <Checkbox label="Same-day delivery beschikbaar" name="is_same_day_delivery" defaultChecked={initial?.is_same_day_delivery ?? false} />
           <Checkbox label="Markeer als 'Nieuw'" name="is_new" defaultChecked={initial?.is_new ?? false} />
           <Checkbox label="Aanbieding" name="is_on_sale" defaultChecked={initial?.is_on_sale ?? false} />

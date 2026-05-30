@@ -20,6 +20,7 @@ export type DbProduct = {
   rating: number | null;
   review_count: number;
   in_stock: boolean;
+  stock_count: number;
   is_same_day_delivery: boolean;
   is_new: boolean;
   is_on_sale: boolean;
@@ -113,6 +114,19 @@ export async function getCategoryBySlug(slug: string) {
 }
 
 // ─── Admin reads (RLS staat alles toe voor admin/staff) ──────────────────────
+
+/** Producten met lage of geen voorraad (zichtbaar). Voor het dashboard. */
+export async function getLowStockProducts(threshold = 3) {
+  const supabase = getSupabaseServer();
+  const { data } = await supabase
+    .from('sbs_products')
+    .select('id, name, short_name, slug, stock_count')
+    .eq('is_hidden', false)
+    .lte('stock_count', threshold)
+    .order('stock_count', { ascending: true })
+    .limit(12);
+  return data ?? [];
+}
 
 export async function getAllProductsForAdmin() {
   const supabase = getSupabaseServer();

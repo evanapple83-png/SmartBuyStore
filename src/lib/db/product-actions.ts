@@ -70,7 +70,8 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     current_price,
     original_price,
     energy_label: (String(formData.get('energy_label') || '') || null) as any,
-    in_stock: formData.get('in_stock') === 'on',
+    stock_count: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))),
+    in_stock: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))) > 0,
     is_same_day_delivery: formData.get('is_same_day_delivery') === 'on',
     is_new: formData.get('is_new') === 'on',
     is_on_sale: formData.get('is_on_sale') === 'on',
@@ -119,7 +120,8 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     current_price,
     original_price,
     energy_label: (String(formData.get('energy_label') || '') || null) as any,
-    in_stock: formData.get('in_stock') === 'on',
+    stock_count: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))),
+    in_stock: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))) > 0,
     is_same_day_delivery: formData.get('is_same_day_delivery') === 'on',
     is_new: formData.get('is_new') === 'on',
     is_on_sale: formData.get('is_on_sale') === 'on',
@@ -199,6 +201,46 @@ export async function toggleCategoryActive(id: string, active: boolean) {
   if (error) throw error;
   revalidatePath('/admin/categorieen');
   revalidatePath('/');
+}
+
+// ─── MERKEN ──────────────────────────────────────────────────────────────────
+
+export async function upsertBrand(formData: FormData) {
+  const supabase = await ensureAdminOrStaff();
+  const id = String(formData.get('id') || '');
+  const name = String(formData.get('name') || '').trim();
+  if (!name) return { ok: false, error: 'Naam is verplicht' };
+
+  const slug = String(formData.get('slug') || '').trim() || slugify(name);
+  const logo_url = String(formData.get('logo_url') || '').trim() || null;
+  const is_active = formData.get('is_active') === 'on';
+  const sort_order = Number(formData.get('sort_order') || 0);
+
+  if (id) {
+    const { error } = await supabase
+      .from('sbs_brands')
+      .update({ slug, name, logo_url, is_active, sort_order })
+      .eq('id', id);
+    if (error) return { ok: false, error: error.code === '23505' ? 'Slug bestaat al' : error.message };
+  } else {
+    const { error } = await supabase
+      .from('sbs_brands')
+      .insert({ slug, name, logo_url, is_active, sort_order });
+    if (error) return { ok: false, error: error.code === '23505' ? 'Slug bestaat al' : error.message };
+  }
+
+  revalidatePath('/admin/merken');
+  revalidatePath('/merken');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+export async function toggleBrandActive(id: string, active: boolean) {
+  const supabase = await ensureAdminOrStaff();
+  const { error } = await supabase.from('sbs_brands').update({ is_active: active }).eq('id', id);
+  if (error) throw error;
+  revalidatePath('/admin/merken');
+  revalidatePath('/merken');
 }
 
 // ─── KLANTEN ─────────────────────────────────────────────────────────────────

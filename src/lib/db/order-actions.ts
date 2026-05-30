@@ -357,6 +357,11 @@ export async function updateOrderStatus(
     delivered: 'order_delivered',
     cancelled: 'order_cancelled',
   };
+  // Voorraad afboeken zodra een order betaald is (idempotent).
+  if (toStatus === 'paid') {
+    await decrementStockForOrder(orderId);
+  }
+
   const emailEvent = EMAIL_FOR_STATUS[toStatus];
   if (emailEvent && !options?.skipEmail) {
     await dispatchOrderEmail(orderId, emailEvent);
@@ -397,6 +402,57 @@ export async function setOrderDeliveryDate(orderId: string, date: string | null)
 
   revalidatePath(`/admin/bestellingen/${orderId}`);
   return { ok: true };
+}
+
+// ─── VOORRAAD AFBOEKEN ───────────────────────────────────────────────────────
+
+/**
+ * Boekt de voorraad af voor een betaalde order. Idempotent via de vlag
+ * stock_decremented: een tweede aanroep (webhook-retry, handmatig) doet niets.
+ * Best-effort: faalt dit, dan blijft de order gewoon betaald.
+ */
+export async function decrementStockForOrder(orderId: string): Promise<void> {
+  try {
+    const admin = getSupabaseAdmin();
+    const { data: order } = await admin
+      .from('sbs_orders')
+      .select('stock_decremented')
+      .eq('id', orderId)
+      .single();
+    if (!order || order.stock_decremented) return;
+
+    // Claim direct zodat parallelle webhooks niet dubbel afboeken.
+    const { data: claimed } = await admin
+      .from('sbs_orders')
+      .update({ stock_decremented: true })
+      .eq('id', orderId)
+      .eq('stock_decremented', false)
+      .select('id')
+      .single();
+    if (!claimed) return; // iemand anders was ons voor
+
+    const { data: items } = await admin
+      .from('sbs_order_items')
+      .select('product_id, qty')
+      .eq('order_id', orderId);
+
+    for (const it of items ?? []) {
+      if (!it.product_id) continue;
+      const { data: p } = await admin
+        .from('sbs_products')
+        .select('stock_count')
+        .eq('id', it.product_id)
+        .single();
+      if (!p) continue;
+      const next = Math.max(0, Number(p.stock_count || 0) - Number(it.qty || 0));
+      await admin
+        .from('sbs_products')
+        .update({ stock_count: next, in_stock: next > 0 })
+        .eq('id', it.product_id);
+    }
+  } catch (err) {
+    console.warn('decrementStockForOrder faalde (order blijft betaald):', err);
+  }
 }
 
 // ─── BEZORGPLANNING ──────────────────────────────────────────────────────────
