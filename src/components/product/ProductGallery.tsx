@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import type { Product } from '@/types/product';
+import { ShieldCheck } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { EnergyLabel } from './EnergyLabel';
 import { formatPriceShort } from '@/lib/price';
@@ -40,6 +41,11 @@ export function ProductGallery({ product }: { product: Product }) {
           {product.cashbackAmount != null && product.cashbackAmount > 0 && (
             <span className="bg-success text-white text-xs font-bold px-3 py-1 rounded-pill shadow-md shadow-success/30">
               € {formatPriceShort(product.cashbackAmount)} CASHBACK
+            </span>
+          )}
+          {product.warrantyLabel && (
+            <span className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-3 py-1 rounded-pill">
+              <ShieldCheck size={12} /> {product.warrantyLabel.toUpperCase()}
             </span>
           )}
         </div>

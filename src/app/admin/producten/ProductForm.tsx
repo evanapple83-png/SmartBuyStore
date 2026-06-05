@@ -7,6 +7,7 @@ import { createProduct, updateProduct } from '@/lib/db/product-actions';
 import { ImageUpload } from './ImageUpload';
 import { BrochureUpload } from './BrochureUpload';
 import { SpecsEditor } from './SpecsEditor';
+import { PriceMarginFields } from './PriceMarginFields';
 
 const ENERGY_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 
@@ -15,9 +16,10 @@ type Props = {
   brands: DbBrand[];
   categories: DbCategory[];
   initial?: Partial<DbProduct>;
+  initialCosts?: { purchase_price: number; margin_percent: number | null } | null;
 };
 
-export function ProductForm({ mode, brands, categories, initial }: Props) {
+export function ProductForm({ mode, brands, categories, initial, initialCosts }: Props) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,13 @@ export function ProductForm({ mode, brands, categories, initial }: Props) {
             defaultValue={initial?.energy_label || ''}
             options={[{ value: '', label: '—' }, ...ENERGY_LABELS.map((l) => ({ value: l, label: l }))]}
           />
+
+          <Field
+            label="Garantielabel"
+            name="warranty_label"
+            defaultValue={initial?.warranty_label || ''}
+            hint={'Bijvoorbeeld "5 jaar garantie" — toont als label op de productkaart en productpagina. Leeg = geen label.'}
+          />
         </div>
 
         <div className="mt-4">
@@ -106,25 +115,22 @@ export function ProductForm({ mode, brands, categories, initial }: Props) {
       </div>
 
       <div className="bg-surface border border-border rounded-[12px] p-6">
-        <h2 className="text-sm font-semibold text-foreground mb-4">Prijs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Inkoop, marge &amp; prijs</h2>
+        <PriceMarginFields
+          initialPurchase={initialCosts?.purchase_price ?? null}
+          initialMargin={initialCosts?.margin_percent ?? null}
+          initialPrice={initial?.current_price?.toString() || ''}
+          btwRate={Number(initial?.btw_rate ?? 21)}
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <Field
-            label="Huidige prijs (€)"
-            name="current_price"
-            type="number"
-            step="0.01"
-            min="0"
-            required
-            defaultValue={initial?.current_price?.toString() || ''}
-          />
-          <Field
-            label="Originele prijs (€)"
+            label="Prijs bij andere webshops (€)"
             name="original_price"
             type="number"
             step="0.01"
             min="0"
             defaultValue={initial?.original_price?.toString() || ''}
-            hint="Optioneel — toont doorgehaalde prijs bij aanbiedingen"
+            hint="Optioneel — wat hetzelfde product elders kost. Toont in de shop als doorgehaalde prijs met 'Je bespaart € X'."
           />
         </div>
         {confirmPriceZero && (

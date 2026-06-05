@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingCart, Check, Scale } from 'lucide-react';
+import { Heart, ShoppingCart, Check, Scale, ShieldCheck } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { useCompare } from '@/hooks/useCompare';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
@@ -72,6 +72,11 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
           {product.cashbackAmount != null && product.cashbackAmount > 0 && (
             <span className="bg-success text-white text-xs font-bold px-2 py-0.5 rounded-pill shadow-md shadow-success/30">
               € {formatPriceShort(product.cashbackAmount)} CASHBACK
+            </span>
+          )}
+          {product.warrantyLabel && (
+            <span className="inline-flex items-center gap-1 bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-pill">
+              <ShieldCheck size={11} /> {product.warrantyLabel.toUpperCase()}
             </span>
           )}
         </div>

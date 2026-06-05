@@ -31,6 +31,7 @@ export function mapDbProduct(row: any): Product {
     brochureUrl: row.brochure_url || null,
     cashbackAmount: row.cashback_amount != null ? Number(row.cashback_amount) : null,
     cashbackLabel: row.cashback_label || null,
+    warrantyLabel: row.warranty_label || null,
     shortDescription: row.short_description || '',
     features: row.features || [],
     specs: row.specs || {},

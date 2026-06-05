@@ -88,6 +88,37 @@ function parseSpecs(formData: FormData): Record<string, string> {
   return {};
 }
 
+/**
+ * Inkoopprijs + marge opslaan in de admin-only tabel sbs_product_costs.
+ * Lege inkoopprijs = rij verwijderen. Best-effort vóór de redirect; een
+ * RLS-/migratiefout mag het product-opslaan zelf niet blokkeren.
+ */
+async function saveProductCosts(supabase: any, productId: string, formData: FormData): Promise<string | null> {
+  const purchaseRaw = String(formData.get('purchase_price') || '').trim();
+  const marginRaw = String(formData.get('margin_percent') || '').trim();
+
+  if (!purchaseRaw) {
+    await supabase.from('sbs_product_costs').delete().eq('product_id', productId);
+    return null;
+  }
+
+  const purchase_price = Number(purchaseRaw);
+  const margin_percent = marginRaw ? Number(marginRaw) : null;
+  if (!Number.isFinite(purchase_price) || purchase_price < 0) return 'Inkoopprijs mag niet negatief zijn';
+  if (margin_percent !== null && (!Number.isFinite(margin_percent) || margin_percent < 0))
+    return 'Marge mag niet negatief zijn';
+
+  const { error } = await supabase
+    .from('sbs_product_costs')
+    .upsert({ product_id: productId, purchase_price, margin_percent }, { onConflict: 'product_id' });
+  if (error) {
+    return /relation .* does not exist/i.test(error.message)
+      ? 'Inkoop/marge niet opgeslagen: draai migratie 0014 in Supabase.'
+      : `Inkoop/marge niet opgeslagen: ${error.message}`;
+  }
+  return null;
+}
+
 export type ProductFormState = {
   ok: boolean;
   error?: string;
@@ -129,6 +160,7 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     current_price,
     original_price,
     energy_label: (String(formData.get('energy_label') || '') || null) as any,
+    warranty_label: String(formData.get('warranty_label') || '').trim() || null,
     stock_count: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))),
     in_stock: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))) > 0,
     is_same_day_delivery: formData.get('is_same_day_delivery') === 'on',
@@ -150,6 +182,10 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     }
     return { ok: false, error: error.message };
   }
+  // Best-effort: faalt dit (bv. migratie 0014 nog niet gedraaid), dan is het
+  // product wél aangemaakt en kan inkoop/marge op de bewerkpagina opnieuw.
+  await saveProductCosts(supabase, data.id, formData);
+
   revalidatePath('/admin/producten');
   redirect(`/admin/producten/${data.id}`);
 }
@@ -184,6 +220,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     current_price,
     original_price,
     energy_label: (String(formData.get('energy_label') || '') || null) as any,
+    warranty_label: String(formData.get('warranty_label') || '').trim() || null,
     stock_count: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))),
     in_stock: Math.max(0, Math.floor(Number(formData.get('stock_count') || 0))) > 0,
     is_same_day_delivery: formData.get('is_same_day_delivery') === 'on',
@@ -206,10 +243,13 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     return { ok: false, error: error.message };
   }
 
+  const costsError = await saveProductCosts(supabase, id, formData);
+
   revalidatePath('/admin/producten');
   revalidatePath(`/admin/producten/${id}`);
   revalidatePath('/');
   revalidatePath(`/product/${update.slug}`);
+  if (costsError) return { ok: false, error: costsError };
   return { ok: true, productId: id };
 }
 

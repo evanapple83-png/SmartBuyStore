@@ -1,16 +1,17 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { getAllBrands, getAllCategoriesForAdmin, getProductByIdForAdmin } from '@/lib/db/catalog';
+import { getAllBrands, getAllCategoriesForAdmin, getProductByIdForAdmin, getProductCostsForAdmin } from '@/lib/db/catalog';
 import { ProductForm } from '../ProductForm';
 
 export const metadata = { title: 'Product bewerken · Admin' };
 
 export default async function EditProductPage({ params }: { params: { id: string } }) {
-  const [product, brands, categories] = await Promise.all([
+  const [product, brands, categories, costs] = await Promise.all([
     getProductByIdForAdmin(params.id),
     getAllBrands(),
     getAllCategoriesForAdmin(),
+    getProductCostsForAdmin(params.id),
   ]);
   if (!product) notFound();
 
@@ -22,7 +23,7 @@ export default async function EditProductPage({ params }: { params: { id: string
       <h1 className="text-2xl font-bold text-foreground mb-1">{product.short_name || product.name}</h1>
       <p className="text-sm text-muted mb-6">/{product.slug}</p>
 
-      <ProductForm mode="edit" initial={product as any} brands={brands as any} categories={categories as any} />
+      <ProductForm mode="edit" initial={product as any} brands={brands as any} categories={categories as any} initialCosts={costs} />
     </div>
   );
 }

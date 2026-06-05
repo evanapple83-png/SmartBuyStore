@@ -49,6 +49,8 @@ export interface Product {
   cashbackAmount?: number | null;
   /** Toelichting bij de cashback, bv. 'via Samsung'. */
   cashbackLabel?: string | null;
+  /** Garantielabel voor klanten, bv. '5 jaar garantie'. */
+  warrantyLabel?: string | null;
   shortDescription: string;
   features: string[];
   specs: Record<string, string>;

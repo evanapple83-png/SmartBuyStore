@@ -35,6 +35,7 @@ export type DbProduct = {
   brochure_url: string | null;
   cashback_amount: number | null;
   cashback_label: string | null;
+  warranty_label: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -150,6 +151,28 @@ export async function getProductByIdForAdmin(id: string) {
     .eq('id', id)
     .single();
   return data;
+}
+
+/**
+ * Inkoopprijs + marge (admin-only tabel, RLS admin/staff).
+ * Defensief: null als de rij of de tabel (migratie 0014) nog niet bestaat.
+ */
+export async function getProductCostsForAdmin(productId: string) {
+  const supabase = getSupabaseServer();
+  try {
+    const { data } = await supabase
+      .from('sbs_product_costs')
+      .select('purchase_price, margin_percent')
+      .eq('product_id', productId)
+      .maybeSingle();
+    if (!data) return null;
+    return {
+      purchase_price: Number(data.purchase_price),
+      margin_percent: data.margin_percent != null ? Number(data.margin_percent) : null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function getAllCategoriesForAdmin() {

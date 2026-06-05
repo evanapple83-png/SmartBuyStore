@@ -14,6 +14,7 @@ import {
   HandCoins,
   FileText,
   Download,
+  ShieldCheck,
 } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { PriceDisplay } from '@/components/product/PriceDisplay';
@@ -212,6 +213,12 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
 
           {/* Trust list */}
           <ul className="flex flex-col gap-2 pt-1">
+            {product.warrantyLabel && (
+              <li className="flex items-center gap-2.5 text-sm font-semibold text-foreground">
+                <ShieldCheck size={15} className="text-primary shrink-0" />
+                {product.warrantyLabel}
+              </li>
+            )}
             {trustList.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-2.5 text-sm text-foreground">
                 <Icon size={15} className="text-success shrink-0" />
