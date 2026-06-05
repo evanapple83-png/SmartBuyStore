@@ -81,8 +81,10 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
   const keySpecs = productKeySpecs(product);
   const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category;
   const beforeCutoff = useBeforeCutoff();
+  // Same-day kan alleen waargemaakt worden als het product óók op eigen voorraad ligt.
+  const sameDayNow = product.isSameDayDelivery && product.inStock;
   const trustList = [
-    product.isSameDayDelivery
+    sameDayNow
       ? {
           icon: Truck,
           text:
@@ -185,16 +187,16 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
             </div>
           )}
 
-          {/* Stock + levertijd */}
+          {/* Levertijd */}
           <p
             className={cn(
               'flex items-center gap-2 text-sm font-semibold',
-              !product.inStock ? 'text-warm' : product.isSameDayDelivery ? 'text-success' : 'text-warm'
+              sameDayNow ? 'text-success' : 'text-warm'
             )}
           >
             <PackageCheck size={16} />
             {!product.inStock
-              ? 'Tijdelijk uitverkocht'
+              ? 'Op bestelling — 3 tot 5 werkdagen levertijd'
               : !product.isSameDayDelivery
                 ? 'Op voorraad — 3 tot 5 werkdagen levertijd'
                 : beforeCutoff === false
@@ -207,9 +209,8 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
           {/* CTA */}
           <button
             onClick={handleAddToCart}
-            disabled={!product.inStock}
             className={cn(
-              'flex items-center justify-center gap-2 w-full py-4 rounded-[12px] font-bold text-base transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+              'flex items-center justify-center gap-2 w-full py-4 rounded-[12px] font-bold text-base transition-all duration-200 cursor-pointer',
               cartState === 'success'
                 ? 'bg-success text-white'
                 : 'bg-accent text-white hover:bg-accent/90 shadow-lg shadow-accent/20'
@@ -265,7 +266,7 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
           )}
 
           {/* Postcode checker */}
-          <PostcodeChecker />
+          <PostcodeChecker sameDayAvailable={sameDayNow} />
         </div>
       </div>
 

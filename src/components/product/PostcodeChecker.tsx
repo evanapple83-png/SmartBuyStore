@@ -1,21 +1,27 @@
 'use client';
 import { useState } from 'react';
-import { MapPin, Truck, Wrench, Recycle, AlertCircle } from 'lucide-react';
-
-const POSTCODE_RE = /^\d{4}\s?[A-Za-z]{2}$/;
+import { MapPin, Truck, Wrench, Recycle, AlertCircle, Clock } from 'lucide-react';
+import { isInSameDayArea } from '@/lib/service-area';
+import { useBeforeCutoff } from '@/hooks/useDeliveryPromise';
 
 /**
- * Bezorgcheck op postcode. De bezorgvensters zijn een illustratieve weergave
- * van de echte zelfde-dag-service (geen live routeplanning) — bewust een UI-demo.
+ * Bezorgcheck op postcode. Checkt het cijferdeel tegen het echte
+ * same-day-gebied (Friesland, Groningen, Drenthe, Overijssel, Flevoland,
+ * Gelderland) en respecteert de 12:00-besteldeadline. Buiten het gebied of
+ * zonder same-day/voorraad is de eerlijke belofte 3-5 werkdagen.
  */
-export function PostcodeChecker() {
+export function PostcodeChecker({ sameDayAvailable = true }: { sameDayAvailable?: boolean }) {
   const [value, setValue] = useState('');
-  const [result, setResult] = useState<'idle' | 'ok' | 'invalid'>('idle');
+  const [result, setResult] = useState<'idle' | 'in-area' | 'out-area' | 'invalid'>('idle');
+  const beforeCutoff = useBeforeCutoff();
 
   function check(e: React.FormEvent) {
     e.preventDefault();
-    setResult(POSTCODE_RE.test(value.trim()) ? 'ok' : 'invalid');
+    const inArea = isInSameDayArea(value);
+    setResult(inArea === null ? 'invalid' : inArea ? 'in-area' : 'out-area');
   }
+
+  const sameDayHere = result === 'in-area' && sameDayAvailable;
 
   return (
     <div className="rounded-[12px] border border-border bg-surface p-4">
@@ -50,12 +56,40 @@ export function PostcodeChecker() {
         </p>
       )}
 
-      {result === 'ok' && (
+      {(result === 'in-area' || result === 'out-area') && (
         <ul className="mt-3 flex flex-col gap-1.5">
-          <li className="flex items-center gap-2 text-sm text-foreground">
-            <Truck size={14} className="text-success shrink-0" />
-            Vandaag mogelijk tussen <strong>18:00–22:00</strong>
-          </li>
+          {sameDayHere ? (
+            beforeCutoff === false ? (
+              <li className="flex items-center gap-2 text-sm text-foreground">
+                <Clock size={14} className="text-warm shrink-0" />
+                <span>
+                  Besteltijd voor vandaag (12:00) is verstreken — <strong>morgen</strong> bezorgd tussen{' '}
+                  <strong>18:00–22:00</strong>
+                </span>
+              </li>
+            ) : (
+              <li className="flex items-center gap-2 text-sm text-foreground">
+                <Truck size={14} className="text-success shrink-0" />
+                <span>
+                  Vóór 12:00 besteld = <strong>vandaag</strong> bezorgd tussen <strong>18:00–22:00</strong>
+                </span>
+              </li>
+            )
+          ) : result === 'out-area' ? (
+            <li className="flex items-center gap-2 text-sm text-foreground">
+              <Truck size={14} className="text-warm shrink-0" />
+              <span>
+                Buiten ons same-day-gebied — bezorging binnen <strong>3 tot 5 werkdagen</strong>
+              </span>
+            </li>
+          ) : (
+            <li className="flex items-center gap-2 text-sm text-foreground">
+              <Truck size={14} className="text-warm shrink-0" />
+              <span>
+                Bezorging binnen <strong>3 tot 5 werkdagen</strong>
+              </span>
+            </li>
+          )}
           <li className="flex items-center gap-2 text-sm text-foreground">
             <Wrench size={14} className="text-success shrink-0" />
             Gratis installatie inbegrepen

@@ -113,9 +113,8 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
     if (p.is_hidden) {
       return { ok: false, error: `"${p.name}" is niet langer beschikbaar. Verwijder het uit je winkelmand.` };
     }
-    if (!p.in_stock) {
-      return { ok: false, error: `"${p.name}" is helaas niet meer op voorraad.` };
-    }
+    // Geen voorraad is géén blokkade meer: producten zonder eigen voorraad zijn
+    // bestelbaar als backorder (levertijd 3-5 werkdagen, besteld bij leverancier).
 
     const qty = Math.max(1, Math.floor(it.qty));
     const unit_incl = Number(p.current_price);          // ← bron van waarheid: DB
