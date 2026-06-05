@@ -69,7 +69,7 @@ export function PriceMarginFields({
 
   return (
     <div className="space-y-4">
-      {/* Stap 1: inkoop + marge */}
+      {/* Rij 1: inkoop excl. (leverancier) | inkoop incl. btw */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <NumField
           label="Inkoopprijs (€, excl. btw)"
@@ -77,20 +77,33 @@ export function PriceMarginFields({
           value={purchase}
           onChange={updatePurchase}
           required
-          hint="Wat jij betaalt aan de leverancier. Alleen zichtbaar voor beheer — verschijnt nooit in de webshop."
+          hint="Zoals op de factuur van de leverancier. Alleen zichtbaar voor beheer — verschijnt nooit in de webshop."
         />
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Inkoopprijs (€, incl. {btwRate}% btw)
+          </span>
+          <input
+            value={Number.isFinite(p) && p > 0 ? formatPrice(p * btwFactor) : ''}
+            readOnly
+            tabIndex={-1}
+            placeholder="—"
+            className="px-3 py-2.5 text-sm border border-border rounded-[10px] bg-surface text-muted cursor-default focus:outline-none"
+          />
+          <span className="text-xs text-muted">Automatisch berekend — wat de inkoop jou incl. btw kost.</span>
+        </label>
+      </div>
+
+      {/* Rij 2: marge | verkoopprijs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <NumField
           label="Marge (%)"
           name="margin_percent"
           value={margin}
           onChange={updateMargin}
           required
-          hint="Klantprijs = inkoop × (1 + marge%). Bijv. 285 + 50% = € 427,50 incl. btw. Let op: de btw komt uit de marge."
+          hint="Klantprijs = inkoop excl. × (1 + marge%). Let op: de btw komt uit de marge."
         />
-      </div>
-
-      {/* Stap 2: berekende verkoopprijs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">
             Verkoopprijs (€, incl. {btwRate}% btw)<span className="text-red-500"> *</span>
@@ -106,11 +119,49 @@ export function PriceMarginFields({
             className="px-3 py-2.5 text-sm font-semibold border border-border rounded-[10px] bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
           />
           <span className="text-xs text-muted">
-            Wordt automatisch berekend uit inkoop + marge. Handmatig bijschaven (bv. afronden naar ,95) mag —
-            pas je inkoop of marge aan, dan rekent hij opnieuw.
+            Automatisch berekend uit inkoop + marge; handmatig bijschaven mag (bv. afronden naar ,95).
           </span>
         </label>
+      </div>
 
+      {/* Marge-suggesties */}
+      {Number.isFinite(p) && p > 0 && (
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">Suggesties verkoopmarge</span>
+          <div className="flex flex-wrap gap-2 mt-1.5">
+            {[30, 40, 50, 60, 75].map((pct) => {
+              const sellPrice = p * (1 + pct / 100);
+              const netProfit = sellPrice / btwFactor - p;
+              const active = Number.isFinite(m) && Math.abs(m - pct) < 0.005;
+              return (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => updateMargin(String(pct))}
+                  className={`flex flex-col items-start px-3 py-2 rounded-[10px] border text-left transition-all ${
+                    active
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/15'
+                      : netProfit < 0
+                        ? 'border-red-200 bg-red-50/50 hover:border-red-300'
+                        : 'border-border bg-background hover:border-primary/40'
+                  }`}
+                >
+                  <span className="text-sm font-bold text-foreground">{pct}% · € {formatPrice(sellPrice)}</span>
+                  <span className={`text-[11px] ${netProfit < 0 ? 'text-red-600' : 'text-muted'}`}>
+                    winst € {formatPrice(netProfit)} ná btw
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted mt-1.5">
+            Klik om de marge over te nemen. Onder ~{Math.round((btwFactor - 1) * 100)}% dekt de marge de btw niet en
+            leg je erop toe.
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {actualMargin !== null && profit !== null && (
           <div
             className={`flex items-start gap-2.5 rounded-[10px] border px-4 py-3 text-sm ${
