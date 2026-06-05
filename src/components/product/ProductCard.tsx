@@ -117,7 +117,7 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
           <p className="text-xs text-muted leading-snug line-clamp-1">{specs}</p>
         )}
 
-        <DeliveryBadge />
+        <DeliveryBadge sameDay={product.isSameDayDelivery} />
 
         {/* Price + CTA pinned to bottom for equal-height cards */}
         <div className="mt-auto pt-2 flex flex-col gap-2">

@@ -37,8 +37,7 @@ interface ProductDetailProps {
   reviews: Review[];
 }
 
-const trustList = [
-  { icon: Truck, text: 'Vandaag bezorgd indien besteld voor 12:00' },
+const trustListBase = [
   { icon: Wrench, text: 'Gratis professionele installatie' },
   { icon: Recycle, text: 'Gratis afvoer oud apparaat' },
   { icon: RotateCcw, text: '30 dagen retourrecht' },
@@ -80,6 +79,12 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
   const [cartState, setCartState] = useState<'idle' | 'loading' | 'success'>('idle');
   const keySpecs = productKeySpecs(product);
   const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category;
+  const trustList = [
+    product.isSameDayDelivery
+      ? { icon: Truck, text: 'Vandaag bezorgd indien besteld voor 12:00' }
+      : { icon: Truck, text: 'Levering binnen 3 tot 5 werkdagen' },
+    ...trustListBase,
+  ];
 
   function handleAddToCart() {
     if (cartState !== 'idle') return;
@@ -172,17 +177,19 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
             </div>
           )}
 
-          {/* Stock */}
+          {/* Stock + levertijd */}
           <p
             className={cn(
               'flex items-center gap-2 text-sm font-semibold',
-              product.inStock ? 'text-success' : 'text-warm'
+              !product.inStock ? 'text-warm' : product.isSameDayDelivery ? 'text-success' : 'text-warm'
             )}
           >
             <PackageCheck size={16} />
-            {product.inStock
-              ? 'Op voorraad — beschikbaar voor levering vandaag'
-              : 'Tijdelijk uitverkocht'}
+            {!product.inStock
+              ? 'Tijdelijk uitverkocht'
+              : product.isSameDayDelivery
+                ? 'Op voorraad — beschikbaar voor levering vandaag'
+                : 'Op voorraad — 3 tot 5 werkdagen levertijd'}
           </p>
 
           {/* CTA */}
