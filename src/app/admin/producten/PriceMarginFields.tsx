@@ -9,11 +9,13 @@ import { formatPrice } from '@/lib/price';
  * automatisch de verkoopprijs — geen handmatig rekenwerk.
  *
  * - Inkoopprijs (excl. btw) en marge (%) zijn de verplichte startpunten.
- * - Zodra beide zijn ingevuld wordt de verkoopprijs live (her)berekend:
- *   inkoop × (1 + marge%) × (1 + btw%). Daarna mag je 'm handmatig
- *   bijschaven (bv. afronden naar ,95); pas je inkoop of marge aan, dan
- *   rekent hij opnieuw.
- * - Onder de verkoopprijs staat continu de wérkelijke marge + winst per stuk.
+ * - Rekensom (bewuste keuze Evan 5 jun, concurrerend prijzen):
+ *   KLANTPRIJS incl. btw = inkoop excl. × (1 + marge%). De btw komt dus uit
+ *   de marge; bij 285 + 50% is de klantprijs 427,50 en de echte winst
+ *   68,31 excl. btw. Daarom toont de indicator ernaast altijd de werkelijke
+ *   winst ná btw (rood zodra de marge de btw niet meer dekt, ±21%).
+ * - Handmatig bijschaven (bv. afronden naar ,95) mag; pas je inkoop of
+ *   marge aan, dan rekent hij opnieuw.
  *
  * Inkoop/marge landen in name="purchase_price" / name="margin_percent"
  * (admin-only tabel sbs_product_costs); de prijs in name="current_price".
@@ -40,7 +42,8 @@ export function PriceMarginFields({
     const p = num(purchaseStr);
     const m = num(marginStr);
     if (!Number.isFinite(p) || p <= 0 || !Number.isFinite(m)) return null;
-    return (p * (1 + m / 100) * btwFactor).toFixed(2);
+    // Klantprijs incl. btw = inkoop excl. × (1 + marge%) — btw zit in de marge.
+    return (p * (1 + m / 100)).toFixed(2);
   }
 
   // Inkoop of marge wijzigen → verkoopprijs automatisch (her)berekenen.
@@ -59,7 +62,9 @@ export function PriceMarginFields({
   const priceNum = num(price);
   const m = num(margin);
   const priceExcl = Number.isFinite(priceNum) ? priceNum / btwFactor : null;
-  const actualMargin = priceExcl !== null && Number.isFinite(p) && p > 0 ? ((priceExcl - p) / p) * 100 : null;
+  // Marge volgens de eigen rekensom: klantprijs incl. t.o.v. inkoop excl.
+  const actualMargin = Number.isFinite(priceNum) && Number.isFinite(p) && p > 0 ? ((priceNum - p) / p) * 100 : null;
+  // Echte winst per stuk: wat er ná afdracht van btw overblijft.
   const profit = priceExcl !== null && Number.isFinite(p) && p > 0 ? priceExcl - p : null;
 
   return (
@@ -80,7 +85,7 @@ export function PriceMarginFields({
           value={margin}
           onChange={updateMargin}
           required
-          hint="Jouw marge bovenop de inkoopprijs. De verkoopprijs wordt hieruit automatisch berekend."
+          hint="Klantprijs = inkoop × (1 + marge%). Bijv. 285 + 50% = € 427,50 incl. btw. Let op: de btw komt uit de marge."
         />
       </div>
 
@@ -118,9 +123,9 @@ export function PriceMarginFields({
           >
             <Calculator size={16} className="shrink-0 mt-0.5" />
             <span>
-              Werkelijke marge: <strong>{actualMargin.toFixed(1)}%</strong> · winst{' '}
-              <strong>€ {formatPrice(profit)}</strong> excl. btw per stuk
-              {profit < 0 && ' — verkoop onder inkoopprijs!'}
+              Marge: <strong>{actualMargin.toFixed(1)}%</strong> · echte winst ná btw:{' '}
+              <strong>€ {formatPrice(profit)}</strong> per stuk
+              {profit < 0 && ' — de marge dekt de btw niet, je legt erop toe!'}
             </span>
           </div>
         )}
