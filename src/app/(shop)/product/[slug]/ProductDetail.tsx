@@ -11,6 +11,9 @@ import {
   CreditCard,
   PackageCheck,
   ChevronDown,
+  HandCoins,
+  FileText,
+  Download,
 } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { PriceDisplay } from '@/components/product/PriceDisplay';
@@ -126,6 +129,31 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
             showSavingsAmount
           />
 
+          {/* Cashback-actie */}
+          {product.cashbackAmount != null && product.cashbackAmount > 0 && (
+            <div className="relative overflow-hidden rounded-[12px] border border-success/30 bg-gradient-to-r from-success/10 via-success/5 to-transparent p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center shrink-0 shadow-lg shadow-success/30">
+                  <HandCoins size={20} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-foreground">
+                    € {formatPriceShort(product.cashbackAmount)} cashback
+                    {product.cashbackLabel && (
+                      <span className="font-medium text-muted"> · {product.cashbackLabel}</span>
+                    )}
+                  </p>
+                  <p className="text-sm text-muted mt-0.5">
+                    Je ontvangt € {formatPriceShort(product.cashbackAmount)} terug na aankoop — effectief betaal je{' '}
+                    <span className="font-bold text-success">
+                      € {formatPriceShort(Math.max(0, product.currentPrice - product.cashbackAmount))}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <p className="text-sm text-muted leading-relaxed">{product.shortDescription}</p>
 
           {/* Feature chips */}
@@ -195,6 +223,20 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
               Veilig betalen met iDEAL, Klarna, Visa of Mastercard
             </li>
           </ul>
+
+          {/* Productbrochure */}
+          {product.brochureUrl && (
+            <a
+              href={product.brochureUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-[12px] border border-border bg-surface text-sm font-semibold text-foreground hover:border-primary/40 hover:bg-background transition-all"
+            >
+              <FileText size={16} className="text-primary" />
+              Download productbrochure (PDF)
+              <Download size={14} className="text-muted" />
+            </a>
+          )}
 
           {/* Postcode checker */}
           <PostcodeChecker />

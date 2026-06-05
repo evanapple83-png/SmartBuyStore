@@ -55,3 +55,49 @@ export async function uploadProductImage(
   const { data } = admin.storage.from(BUCKET).getPublicUrl(path);
   return { ok: true, url: data.publicUrl };
 }
+
+const BROCHURE_MAX_BYTES = 20 * 1024 * 1024; // 20 MB
+
+/**
+ * Upload van een productbrochure (PDF) naar dezelfde publieke bucket,
+ * onder brochures/. Geeft de publieke URL terug.
+ */
+export async function uploadProductBrochure(
+  formData: FormData
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  try {
+    await ensureAdminOrStaff();
+  } catch (e: any) {
+    return { ok: false, error: e.message || 'Geen toestemming' };
+  }
+
+  const file = formData.get('file');
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: 'Geen bestand ontvangen.' };
+  }
+  if (file.size > BROCHURE_MAX_BYTES) {
+    return { ok: false, error: 'Brochure is te groot (max. 20 MB).' };
+  }
+  if (file.type !== 'application/pdf') {
+    return { ok: false, error: 'Gebruik een PDF-bestand.' };
+  }
+
+  const admin = getSupabaseAdmin();
+  const rand = Math.random().toString(36).slice(2, 8);
+  const path = `brochures/${Date.now()}-${rand}-${slugifyName(file.name) || 'brochure.pdf'}`;
+
+  const { error } = await admin.storage.from(BUCKET).upload(path, file, {
+    contentType: 'application/pdf',
+    upsert: false,
+    cacheControl: '31536000',
+  });
+  if (error) {
+    const msg = /bucket not found/i.test(error.message)
+      ? 'De opslag-bucket ontbreekt nog. Draai migratie 0010 in Supabase.'
+      : error.message;
+    return { ok: false, error: msg };
+  }
+
+  const { data } = admin.storage.from(BUCKET).getPublicUrl(path);
+  return { ok: true, url: data.publicUrl };
+}

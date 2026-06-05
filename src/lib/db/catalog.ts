@@ -31,6 +31,10 @@ export type DbProduct = {
   attributes: ProductAttributes;
   image_primary: string | null;
   image_fallback: string | null;
+  images_extra: string[];
+  brochure_url: string | null;
+  cashback_amount: number | null;
+  cashback_label: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;

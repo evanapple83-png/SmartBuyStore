@@ -40,7 +40,15 @@ export interface Product {
   images: {
     primary: string;
     fallback: string;
+    /** Extra galerijfoto's (volgorde = weergavevolgorde). Optioneel: oudere cart-snapshots missen dit veld. */
+    extra?: string[];
   };
+  /** Productbrochure (PDF, publieke URL). Optioneel: oudere cart-snapshots missen dit veld. */
+  brochureUrl?: string | null;
+  /** Actieve cashback in euro's (weergave; wordt niet verrekend in de winkelwagen). */
+  cashbackAmount?: number | null;
+  /** Toelichting bij de cashback, bv. 'via Samsung'. */
+  cashbackLabel?: string | null;
   shortDescription: string;
   features: string[];
   specs: Record<string, string>;

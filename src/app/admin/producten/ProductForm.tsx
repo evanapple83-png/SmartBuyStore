@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { DbBrand, DbCategory, DbProduct } from '@/lib/db/catalog';
 import { createProduct, updateProduct } from '@/lib/db/product-actions';
 import { ImageUpload } from './ImageUpload';
+import { BrochureUpload } from './BrochureUpload';
 
 const ENERGY_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 
@@ -129,9 +130,35 @@ export function ProductForm({ mode, brands, categories, initial }: Props) {
 
       <div className="bg-surface border border-border rounded-[12px] p-6">
         <h2 className="text-sm font-semibold text-foreground mb-4">Foto's</h2>
-        <ImageUpload defaultValue={initial?.image_primary || ''} />
+        <ImageUpload defaultValue={initial?.image_primary || ''} defaultExtra={initial?.images_extra || []} />
         <div className="mt-4">
           <Field label="Fallback afbeelding URL (optioneel)" name="image_fallback" defaultValue={initial?.image_fallback || ''} hint="Wordt getoond als de hoofdafbeelding niet laadt." />
+        </div>
+      </div>
+
+      <div className="bg-surface border border-border rounded-[12px] p-6">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Brochure</h2>
+        <BrochureUpload defaultValue={initial?.brochure_url || ''} />
+      </div>
+
+      <div className="bg-surface border border-border rounded-[12px] p-6">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Cashback</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field
+            label="Cashback-bedrag (€)"
+            name="cashback_amount"
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={initial?.cashback_amount?.toString() || ''}
+            hint="Laat leeg als er geen cashback-actie loopt. Wordt opvallend getoond op de productpagina en productkaart."
+          />
+          <Field
+            label="Toelichting (optioneel)"
+            name="cashback_label"
+            defaultValue={initial?.cashback_label || ''}
+            hint={'Bijvoorbeeld "via Samsung" of "t/m 30 juni". De klant ontvangt dit bedrag terug van de fabrikant; de winkelprijs verandert niet.'}
+          />
         </div>
       </div>
 

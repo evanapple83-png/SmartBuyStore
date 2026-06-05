@@ -26,7 +26,11 @@ export function mapDbProduct(row: any): Product {
     images: {
       primary: row.image_primary || '',
       fallback: row.image_fallback || '',
+      extra: Array.isArray(row.images_extra) ? row.images_extra : [],
     },
+    brochureUrl: row.brochure_url || null,
+    cashbackAmount: row.cashback_amount != null ? Number(row.cashback_amount) : null,
+    cashbackLabel: row.cashback_label || null,
     shortDescription: row.short_description || '',
     features: row.features || [],
     specs: row.specs || {},

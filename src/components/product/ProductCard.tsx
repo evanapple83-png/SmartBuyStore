@@ -9,6 +9,7 @@ import { PriceDisplay } from './PriceDisplay';
 import { EnergyLabel } from './EnergyLabel';
 import { DeliveryBadge } from './DeliveryBadge';
 import { StarRating } from '@/components/ui/StarRating';
+import { formatPriceShort } from '@/lib/price';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
@@ -66,6 +67,11 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
           {product.isOnSale && (
             <span className="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-pill">
               SALE
+            </span>
+          )}
+          {product.cashbackAmount != null && product.cashbackAmount > 0 && (
+            <span className="bg-success text-white text-xs font-bold px-2 py-0.5 rounded-pill shadow-md shadow-success/30">
+              € {formatPriceShort(product.cashbackAmount)} CASHBACK
             </span>
           )}
         </div>

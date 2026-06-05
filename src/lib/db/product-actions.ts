@@ -32,6 +32,45 @@ async function ensureAdminOrStaff() {
 
 // ─── PRODUCTEN ───────────────────────────────────────────────────────────────
 
+/** Parse de gedeelde media/cashback-velden uit het productformulier. */
+function parseMediaAndCashback(formData: FormData): {
+  fields?: {
+    images_extra: string[];
+    brochure_url: string | null;
+    cashback_amount: number | null;
+    cashback_label: string | null;
+  };
+  error?: string;
+} {
+  let images_extra: string[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get('images_extra') || '[]'));
+    if (Array.isArray(parsed)) {
+      images_extra = parsed.filter((u): u is string => typeof u === 'string' && u.length > 0);
+    }
+  } catch {
+    // ongeldig JSON → behandel als geen extra foto's
+  }
+
+  const cashback_raw = String(formData.get('cashback_amount') || '').trim();
+  const cashback_amount = cashback_raw ? Number(cashback_raw) : null;
+  if (cashback_amount !== null && (!Number.isFinite(cashback_amount) || cashback_amount < 0)) {
+    return { error: 'Cashback-bedrag mag niet negatief zijn' };
+  }
+
+  return {
+    fields: {
+      images_extra,
+      brochure_url: String(formData.get('brochure_url') || '').trim() || null,
+      cashback_amount,
+      // Label alleen bewaren als er ook echt een cashback-bedrag is.
+      cashback_label: cashback_amount !== null
+        ? String(formData.get('cashback_label') || '').trim() || null
+        : null,
+    },
+  };
+}
+
 export type ProductFormState = {
   ok: boolean;
   error?: string;
@@ -60,6 +99,9 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     ? featuresStr.split('\n').map((s) => s.trim()).filter(Boolean)
     : [];
 
+  const media = parseMediaAndCashback(formData);
+  if (media.error) return { ok: false, error: media.error };
+
   const insert = {
     slug,
     name,
@@ -80,6 +122,7 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     features,
     image_primary: String(formData.get('image_primary') || '') || null,
     image_fallback: String(formData.get('image_fallback') || '') || null,
+    ...media.fields,
   };
 
   const { data, error } = await supabase.from('sbs_products').insert(insert).select('id').single();
@@ -110,6 +153,9 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     ? featuresStr.split('\n').map((s) => s.trim()).filter(Boolean)
     : [];
 
+  const media = parseMediaAndCashback(formData);
+  if (media.error) return { ok: false, error: media.error };
+
   const update = {
     slug: String(formData.get('slug') || '').trim(),
     name,
@@ -130,6 +176,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     features,
     image_primary: String(formData.get('image_primary') || '') || null,
     image_fallback: String(formData.get('image_fallback') || '') || null,
+    ...media.fields,
   };
 
   const { error } = await supabase.from('sbs_products').update(update).eq('id', id);
