@@ -6,6 +6,7 @@ import type { DbBrand, DbCategory, DbProduct } from '@/lib/db/catalog';
 import { createProduct, updateProduct } from '@/lib/db/product-actions';
 import { ImageUpload } from './ImageUpload';
 import { BrochureUpload } from './BrochureUpload';
+import { SpecsEditor } from './SpecsEditor';
 
 const ENERGY_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 
@@ -94,9 +95,14 @@ export function ProductForm({ mode, brands, categories, initial }: Props) {
             name="features"
             defaultValue={(initial?.features || []).join('\n')}
             rows={4}
-            hint="Bijvoorbeeld: NoFrost"
+            hint="Korte verkooppunten, bijvoorbeeld: NoFrost. Volledige specificaties horen in de sectie Specificaties hieronder."
           />
         </div>
+      </div>
+
+      <div className="bg-surface border border-border rounded-[12px] p-6">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Specificaties</h2>
+        <SpecsEditor defaultValue={initial?.specs || {}} />
       </div>
 
       <div className="bg-surface border border-border rounded-[12px] p-6">

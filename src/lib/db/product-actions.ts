@@ -71,6 +71,23 @@ function parseMediaAndCashback(formData: FormData): {
   };
 }
 
+/** Parse het specs-veld (JSON-object label→waarde) uit het productformulier. */
+function parseSpecs(formData: FormData): Record<string, string> {
+  try {
+    const parsed = JSON.parse(String(formData.get('specs') || '{}'));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return Object.fromEntries(
+        Object.entries(parsed)
+          .filter(([k, v]) => typeof k === 'string' && typeof v === 'string' && k.trim() && String(v).trim())
+          .map(([k, v]) => [k.trim(), String(v).trim()])
+      );
+    }
+  } catch {
+    // ongeldig JSON → geen specs
+  }
+  return {};
+}
+
 export type ProductFormState = {
   ok: boolean;
   error?: string;
@@ -122,6 +139,7 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     features,
     image_primary: String(formData.get('image_primary') || '') || null,
     image_fallback: String(formData.get('image_fallback') || '') || null,
+    specs: parseSpecs(formData),
     ...media.fields,
   };
 
@@ -176,6 +194,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     features,
     image_primary: String(formData.get('image_primary') || '') || null,
     image_fallback: String(formData.get('image_fallback') || '') || null,
+    specs: parseSpecs(formData),
     ...media.fields,
   };
 
