@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { X, Scale, Check, Minus, ArrowRight, Truck, Wrench } from 'lucide-react';
 import { useCompare } from '@/hooks/useCompare';
+import { useBeforeCutoff } from '@/hooks/useDeliveryPromise';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { StarRating } from '@/components/ui/StarRating';
 import { formatPriceShort } from '@/lib/price';
@@ -36,6 +37,7 @@ const ROWS: Row[] = [
 
 export function CompareTray() {
   const { items, remove, clear, isOpen, open, close } = useCompare();
+  const beforeCutoff = useBeforeCutoff();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -194,7 +196,8 @@ export function CompareTray() {
             <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-border shrink-0 bg-surface">
               <div className="flex items-center gap-4 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
-                  <Truck size={13} className="text-success" /> Vandaag bezorgd
+                  <Truck size={13} className="text-success" />{' '}
+                  {beforeCutoff === false ? 'Morgen in huis' : 'Vandaag bezorgd'}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Wrench size={13} className="text-success" /> Gratis installatie

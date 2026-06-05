@@ -26,6 +26,7 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 import type { Review } from '@/lib/db/reviews';
 import { Breadcrumbs } from '@/components/product/Breadcrumbs';
 import { useCart } from '@/hooks/useCart';
+import { useBeforeCutoff } from '@/hooks/useDeliveryPromise';
 import { formatPriceShort } from '@/lib/price';
 import { productKeySpecs } from '@/lib/product-display';
 import { CATEGORY_LABELS } from '@/lib/catalog-filters';
@@ -79,9 +80,16 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
   const [cartState, setCartState] = useState<'idle' | 'loading' | 'success'>('idle');
   const keySpecs = productKeySpecs(product);
   const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category;
+  const beforeCutoff = useBeforeCutoff();
   const trustList = [
     product.isSameDayDelivery
-      ? { icon: Truck, text: 'Vandaag bezorgd indien besteld voor 12:00' }
+      ? {
+          icon: Truck,
+          text:
+            beforeCutoff === false
+              ? 'Morgen in huis — besteltijd voor vandaag (12:00) is verstreken'
+              : 'Vandaag bezorgd indien besteld voor 12:00',
+        }
       : { icon: Truck, text: 'Levering binnen 3 tot 5 werkdagen' },
     ...trustListBase,
   ];
@@ -187,9 +195,13 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
             <PackageCheck size={16} />
             {!product.inStock
               ? 'Tijdelijk uitverkocht'
-              : product.isSameDayDelivery
-                ? 'Op voorraad — beschikbaar voor levering vandaag'
-                : 'Op voorraad — 3 tot 5 werkdagen levertijd'}
+              : !product.isSameDayDelivery
+                ? 'Op voorraad — 3 tot 5 werkdagen levertijd'
+                : beforeCutoff === false
+                  ? 'Op voorraad — morgen in huis'
+                  : beforeCutoff === true
+                    ? 'Op voorraad — beschikbaar voor levering vandaag'
+                    : 'Op voorraad — vóór 12:00 besteld = vandaag in huis'}
           </p>
 
           {/* CTA */}

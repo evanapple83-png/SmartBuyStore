@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { X, ShoppingCart, Trash2, Minus, Plus, Truck, Wrench, Recycle, RotateCcw, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import { useBeforeCutoff } from '@/hooks/useDeliveryPromise';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { formatPrice } from '@/lib/price';
 import { cn } from '@/lib/utils';
@@ -12,8 +13,7 @@ function specsLine(specs: Record<string, string>): string {
   return Object.values(specs).slice(0, 3).join(' • ');
 }
 
-const trustItems = [
-  { icon: Truck, text: 'Vandaag bezorgd indien besteld voor 12:00' },
+const trustItemsBase = [
   { icon: Wrench, text: 'Gratis professionele installatie' },
   { icon: Recycle, text: 'Gratis afvoer oud apparaat' },
   { icon: RotateCcw, text: '30 dagen retour' },
@@ -21,6 +21,17 @@ const trustItems = [
 
 export function CartDrawer() {
   const { items, totalPrice, totalItems, isCartOpen, closeCart, updateQuantity, removeFromCart } = useCart();
+  const beforeCutoff = useBeforeCutoff();
+  const trustItems = [
+    {
+      icon: Truck,
+      text:
+        beforeCutoff === false
+          ? 'Morgen in huis — besteltijd voor vandaag (12:00) is verstreken'
+          : 'Vandaag bezorgd indien besteld voor 12:00',
+    },
+    ...trustItemsBase,
+  ];
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
