@@ -147,6 +147,99 @@ export type DashboardStats = {
 
 const PAID_STATUSES = ['paid', 'in_progress', 'planned_delivery', 'delivered', 'completed'];
 
+// ─── Financieel: winst + verschuldigde btw ───────────────────────────────────
+
+export type FinanceStats = {
+  profitMonth: number;       // winst excl. btw, deze maand
+  profitQuarter: number;     // winst excl. btw, dit kwartaal
+  btwMonth: number;          // verschuldigde btw over verkopen, deze maand
+  btwQuarter: number;        // verschuldigde btw over verkopen, dit kwartaal
+  itemsWithCost: number;     // verkochte artikelen mét ingevulde inkoopprijs (kwartaal)
+  itemsTotal: number;        // alle verkochte artikelen (kwartaal)
+  quarterLabel: string;      // bv. "Q2 2026"
+};
+
+/**
+ * Winst = verkoop excl. btw − inkoop (uit sbs_product_costs) per verkocht
+ * artikel, minus het excl.-deel van kortingen. Artikelen zonder ingevulde
+ * inkoopprijs tellen niet mee in de winst (coverage zichtbaar in de UI).
+ * Verschuldigde btw = btw over betaalde verkopen, gecorrigeerd voor korting
+ * (indicatie — voorbelasting over inkoopfacturen gaat er bij de aangifte nog af).
+ */
+export async function getFinanceStats(): Promise<FinanceStats> {
+  const supabase = getSupabaseServer();
+  const now = new Date();
+  const quarter = Math.floor(now.getMonth() / 3);
+  const quarterStart = new Date(now.getFullYear(), quarter * 3, 1).toISOString();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const zero: FinanceStats = {
+    profitMonth: 0, profitQuarter: 0, btwMonth: 0, btwQuarter: 0,
+    itemsWithCost: 0, itemsTotal: 0, quarterLabel: `Q${quarter + 1} ${now.getFullYear()}`,
+  };
+
+  try {
+    const { data: orders } = await supabase
+      .from('sbs_orders')
+      .select('id, paid_at, btw_total, discount_amount')
+      .in('status', PAID_STATUSES)
+      .gte('paid_at', quarterStart);
+    if (!orders || orders.length === 0) return zero;
+
+    const orderIds = orders.map((o) => o.id);
+    const { data: items } = await supabase
+      .from('sbs_order_items')
+      .select('order_id, product_id, quantity, line_subtotal_excl_btw')
+      .in('order_id', orderIds);
+
+    const productIds = Array.from(new Set((items ?? []).map((i) => i.product_id).filter(Boolean)));
+    const { data: costs } = productIds.length
+      ? await supabase.from('sbs_product_costs').select('product_id, purchase_price').in('product_id', productIds)
+      : { data: [] as any[] };
+    const costByProduct = new Map((costs ?? []).map((c) => [c.product_id, Number(c.purchase_price)]));
+
+    // Winst per order optellen (alleen artikelen met bekende inkoopprijs)
+    const profitByOrder = new Map<string, number>();
+    let itemsWithCost = 0;
+    let itemsTotal = 0;
+    for (const it of items ?? []) {
+      itemsTotal += 1;
+      const purchase = it.product_id ? costByProduct.get(it.product_id) : undefined;
+      if (purchase === undefined) continue;
+      itemsWithCost += 1;
+      const lineProfit = Number(it.line_subtotal_excl_btw || 0) - Number(it.quantity || 0) * purchase;
+      profitByOrder.set(it.order_id, (profitByOrder.get(it.order_id) || 0) + lineProfit);
+    }
+
+    let profitMonth = 0, profitQuarter = 0, btwMonth = 0, btwQuarter = 0;
+    for (const o of orders) {
+      const discount = Number(o.discount_amount || 0);
+      // Korting is incl. btw → excl.-deel van de winst af, btw-deel van de btw af (21%).
+      const orderProfit = (profitByOrder.get(o.id) || 0) - discount / 1.21;
+      const orderBtw = Math.max(0, Number(o.btw_total || 0) - (discount * 0.21) / 1.21);
+      const inMonth = o.paid_at && o.paid_at >= monthStart;
+      profitQuarter += orderProfit;
+      btwQuarter += orderBtw;
+      if (inMonth) {
+        profitMonth += orderProfit;
+        btwMonth += orderBtw;
+      }
+    }
+
+    return {
+      profitMonth: +profitMonth.toFixed(2),
+      profitQuarter: +profitQuarter.toFixed(2),
+      btwMonth: +btwMonth.toFixed(2),
+      btwQuarter: +btwQuarter.toFixed(2),
+      itemsWithCost,
+      itemsTotal,
+      quarterLabel: zero.quarterLabel,
+    };
+  } catch (err) {
+    console.warn('Finance stats fallback:', err);
+    return zero;
+  }
+}
+
 export async function getAdminDashboardStats(): Promise<DashboardStats> {
   const supabase = getSupabaseServer();
   const today = new Date().toISOString().slice(0, 10);

@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { Plus, ShoppingBag, Eye, Users, TrendingUp, Tag, BarChart3, BookOpen } from 'lucide-react';
-import { getAdminDashboardStats, getAllOrdersForAdmin } from '@/lib/db/orders';
+import { Plus, ShoppingBag, Eye, Users, TrendingUp, Tag, BarChart3, BookOpen, Wallet, Landmark } from 'lucide-react';
+import { getAdminDashboardStats, getAllOrdersForAdmin, getFinanceStats } from '@/lib/db/orders';
 import { getIntelligence, prettyPath } from '@/lib/db/intelligence';
 import { getDiscountStats } from '@/lib/db/discount-codes';
 import { getLowStockProducts } from '@/lib/db/catalog';
@@ -26,13 +26,14 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  const [stats, recent, intel, discountStats, lowStock, onboarding] = await Promise.all([
+  const [stats, recent, intel, discountStats, lowStock, onboarding, finance] = await Promise.all([
     getAdminDashboardStats(),
     getAllOrdersForAdmin({ limit: 8 }),
     getIntelligence(),
     getDiscountStats(),
     getLowStockProducts(3),
     getOnboardingStatus(),
+    getFinanceStats(),
   ]);
 
   const topCodes = Object.values(discountStats).sort((a, b) => b.orders - a.orders || b.revenue - a.revenue).slice(0, 5);
@@ -64,6 +65,28 @@ export default async function AdminDashboardPage() {
         <StatCard label="Onbetaald > 24 uur" value={String(stats.unpaidOver24h)} icon={ShoppingBag} highlight={stats.unpaidOver24h > 0} />
         <StatCard label="Conversie (7d)" value={intel.enabled ? `${intel.conversion7d}%` : '—'} icon={BarChart3} sub="orders ÷ bezoekers" />
       </div>
+
+      {/* ── Financieel: winst + verschuldigde btw ── */}
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <Wallet size={18} className="text-primary" />
+          <h2 className="text-lg font-bold text-foreground">Financieel</h2>
+          <span className="text-xs text-muted">betaalde bestellingen · {finance.quarterLabel}</span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Winst deze maand" value={euro(finance.profitMonth)} icon={Wallet} highlight={finance.profitMonth < 0} />
+          <StatCard label={`Winst ${finance.quarterLabel}`} value={euro(finance.profitQuarter)} icon={Wallet} highlight={finance.profitQuarter < 0} />
+          <StatCard label="Verschuldigde btw deze maand" value={euro(finance.btwMonth)} icon={Landmark} />
+          <StatCard label={`Verschuldigde btw ${finance.quarterLabel}`} value={euro(finance.btwQuarter)} icon={Landmark} sub="over verkopen" />
+        </div>
+        <p className="text-xs text-muted mt-2">
+          Winst = verkoop excl. btw min inkoopprijs, na kortingen
+          {finance.itemsTotal > 0 && finance.itemsWithCost < finance.itemsTotal && (
+            <> — let op: {finance.itemsWithCost} van {finance.itemsTotal} verkochte artikelen heeft een ingevulde inkoopprijs, de rest telt niet mee</>
+          )}
+          . Btw is een indicatie over je verkopen; de btw op je inkoopfacturen (voorbelasting) mag er bij de aangifte nog vanaf.
+        </p>
+      </section>
 
       {/* ── Website intelligence ── */}
       <section>
