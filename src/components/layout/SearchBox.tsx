@@ -4,13 +4,13 @@ import { useRouter } from 'next/navigation';
 import { Search, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-/** Voorbeeld-suggesties die naar de juiste categorie navigeren. */
-const SUGGESTIONS: { label: string; href: string }[] = [
-  { label: 'Samsung koelkast', href: '/categorie/koelkasten' },
-  { label: 'No Frost koelkast', href: '/categorie/koelkasten' },
-  { label: 'Wasmachine 8 kg', href: '/categorie/wasmachines' },
-  { label: 'Vaatwasser', href: '/categorie/vaatwassers' },
-  { label: 'Energielabel A', href: '/winkel' },
+/** Populaire zoekopdrachten — voeren een echte zoekopdracht uit. */
+const SUGGESTIONS: string[] = [
+  'Samsung koelkast',
+  'No Frost koelkast',
+  'Wasmachine 8 kg',
+  'Vaatwasser',
+  'Energielabel A',
 ];
 
 export function SearchBox({ autoFocus = false, className }: { autoFocus?: boolean; className?: string }) {
@@ -20,19 +20,23 @@ export function SearchBox({ autoFocus = false, className }: { autoFocus?: boolea
   const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const filtered = value.trim()
-    ? SUGGESTIONS.filter((s) => s.label.toLowerCase().includes(value.trim().toLowerCase()))
+    ? SUGGESTIONS.filter((s) => s.toLowerCase().includes(value.trim().toLowerCase()))
     : SUGGESTIONS;
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    router.push('/winkel');
+  function search(term: string) {
+    const q = term.trim();
+    router.push(q ? `/winkel?q=${encodeURIComponent(q)}` : '/winkel');
     setFocused(false);
   }
 
-  function go(href: string) {
-    router.push(href);
-    setValue('');
-    setFocused(false);
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    search(value);
+  }
+
+  function go(term: string) {
+    setValue(term);
+    search(term);
   }
 
   return (
@@ -64,15 +68,15 @@ export function SearchBox({ autoFocus = false, className }: { autoFocus?: boolea
           </p>
           <ul>
             {filtered.map((s) => (
-              <li key={s.label}>
+              <li key={s}>
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => go(s.href)}
+                  onClick={() => go(s)}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground hover:bg-background transition-colors text-left cursor-pointer"
                 >
                   <TrendingUp size={14} className="text-muted shrink-0" />
-                  {s.label}
+                  {s}
                 </button>
               </li>
             ))}

@@ -26,6 +26,8 @@ export interface Product {
   slug: string;
   name: string;
   shortName: string;
+  /** Artikelnummer / modelnummer (SKU). Optioneel: niet elk product heeft er een. */
+  sku?: string | null;
   brand: string;
   category: Category;
   currentPrice: number;

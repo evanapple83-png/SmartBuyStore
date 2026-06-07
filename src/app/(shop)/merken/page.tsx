@@ -19,7 +19,7 @@ export default async function MerkenPage() {
           {brands.map((b: any) => (
             <Link
               key={b.id}
-              href="/winkel"
+              href={`/winkel?merk=${encodeURIComponent(b.name)}`}
               className="flex items-center justify-center text-center bg-surface border border-border rounded-[12px] px-4 py-6 text-sm font-display font-bold text-foreground hover:border-primary hover:text-primary transition-colors"
             >
               {b.name}

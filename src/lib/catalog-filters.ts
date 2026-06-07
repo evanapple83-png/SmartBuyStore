@@ -61,6 +61,43 @@ export function sortProducts(products: Product[], key: SortKey): Product[] {
   }
 }
 
+// ─── Tekstzoeken ─────────────────────────────────────────────────────────────
+
+/** Lowercase + diacritics weg, zodat "cafe" ook "Café" vindt. */
+function normalize(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Vrije-tekst-match over de relevante productvelden (naam, merk, modelnummer,
+ * categorie, korte omschrijving, kenmerken en specs). Elke losse zoekterm moet
+ * ergens voorkomen (AND), zodat "samsung koelkast" alleen Samsung-koelkasten geeft.
+ */
+export function productMatchesQuery(p: Product, query: string): boolean {
+  const q = normalize(query.trim());
+  if (!q) return true;
+  const haystack = normalize(
+    [
+      p.name,
+      p.shortName,
+      p.brand,
+      p.sku ?? '',
+      CATEGORY_LABELS[p.category] ?? p.category,
+      p.shortDescription,
+      p.features.join(' '),
+      Object.values(p.specs).join(' '),
+      p.attributes.type ?? '',
+      p.attributes.color ?? '',
+    ].join(' ')
+  );
+  return q.split(/\s+/).every((term) => haystack.includes(term));
+}
+
+export function searchProducts(products: Product[], query: string): Product[] {
+  if (!query.trim()) return products;
+  return products.filter((p) => productMatchesQuery(p, query));
+}
+
 // ─── Filter state ────────────────────────────────────────────────────────────
 
 export interface FilterState {

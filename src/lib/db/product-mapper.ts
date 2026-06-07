@@ -10,6 +10,7 @@ export function mapDbProduct(row: any): Product {
     slug: row.slug,
     name: row.name,
     shortName: row.short_name || row.name,
+    sku: row.sku || null,
     brand: row.brand?.name || '',
     category: (row.category?.slug || 'koelkasten') as Category,
     currentPrice: Number(row.current_price),

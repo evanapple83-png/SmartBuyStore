@@ -5,6 +5,7 @@ import type { Product } from '@/types/product';
 import {
   computeFacets,
   applyFilters,
+  searchProducts,
   sortProducts,
   countActiveFilters,
   EMPTY_FILTERS,
@@ -25,6 +26,10 @@ interface CatalogBrowserProps {
   description?: string;
   /** Welke facet de snelfilter-pills aansturen */
   pillDimension?: 'type' | 'category';
+  /** Vrije-tekst-zoekterm uit de URL (?q=). Filtert het assortiment vóór de facetten. */
+  query?: string;
+  /** Voorgeselecteerd merk uit de URL (?merk=), bv. bij doorklikken vanaf de merkenpagina. */
+  initialBrand?: string;
 }
 
 export function CatalogBrowser({
@@ -33,15 +38,27 @@ export function CatalogBrowser({
   title,
   description,
   pillDimension = 'type',
+  query = '',
+  initialBrand = '',
 }: CatalogBrowserProps) {
-  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
+  const [filters, setFilters] = useState<FilterState>(() =>
+    initialBrand ? { ...EMPTY_FILTERS, brands: [initialBrand] } : EMPTY_FILTERS
+  );
   const [sortKey, setSortKey] = useState<SortKey>('recommended');
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const facets = useMemo(() => computeFacets(products), [products]);
+  // Wisselt de URL van merk (bv. ander merk aangeklikt), dan de filters opnieuw zaaien.
+  useEffect(() => {
+    setFilters(initialBrand ? { ...EMPTY_FILTERS, brands: [initialBrand] } : EMPTY_FILTERS);
+  }, [initialBrand]);
+
+  // Eerst op zoekterm filteren; facetten + filters werken daarna op die subset,
+  // zodat de tellingen in het filterpaneel bij de zoekresultaten passen.
+  const searched = useMemo(() => searchProducts(products, query), [products, query]);
+  const facets = useMemo(() => computeFacets(searched), [searched]);
   const results = useMemo(
-    () => sortProducts(applyFilters(products, filters), sortKey),
-    [products, filters, sortKey]
+    () => sortProducts(applyFilters(searched, filters), sortKey),
+    [searched, filters, sortKey]
   );
 
   const activeCount = countActiveFilters(filters);
@@ -145,8 +162,14 @@ export function CatalogBrowser({
             <ProductGrid products={results} columns={3} />
           ) : (
             <div className="text-center py-20 text-muted border border-dashed border-border rounded-[16px]">
-              <p className="text-lg font-semibold text-foreground mb-1">Geen producten gevonden</p>
-              <p className="text-sm mb-4">Pas je filters aan om meer resultaten te zien.</p>
+              <p className="text-lg font-semibold text-foreground mb-1">
+                {query ? `Geen resultaten voor "${query}"` : 'Geen producten gevonden'}
+              </p>
+              <p className="text-sm mb-4">
+                {query
+                  ? 'Controleer de spelling of probeer een algemenere zoekterm.'
+                  : 'Pas je filters aan om meer resultaten te zien.'}
+              </p>
               {activeCount > 0 && (
                 <button
                   onClick={() => setFilters(EMPTY_FILTERS)}
