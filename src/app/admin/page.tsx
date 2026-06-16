@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { Plus, ShoppingBag, Eye, Users, TrendingUp, Tag, BarChart3, BookOpen, Wallet, Landmark } from 'lucide-react';
+import { Plus, ShoppingBag, Eye, Users, TrendingUp, Tag, BarChart3, BookOpen, Wallet, Landmark, Bell, ArrowRight } from 'lucide-react';
 import { getAdminDashboardStats, getAllOrdersForAdmin, getFinanceStats } from '@/lib/db/orders';
+import { getAdminAlerts } from '@/lib/db/admin-alerts';
 import { getIntelligence, prettyPath } from '@/lib/db/intelligence';
 import { getDiscountStats } from '@/lib/db/discount-codes';
 import { getLowStockProducts } from '@/lib/db/catalog';
@@ -26,7 +27,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  const [stats, recent, intel, discountStats, lowStock, onboarding, finance] = await Promise.all([
+  const [stats, recent, intel, discountStats, lowStock, onboarding, finance, alerts] = await Promise.all([
     getAdminDashboardStats(),
     getAllOrdersForAdmin({ limit: 8 }),
     getIntelligence(),
@@ -34,7 +35,23 @@ export default async function AdminDashboardPage() {
     getLowStockProducts(3),
     getOnboardingStatus(),
     getFinanceStats(),
+    getAdminAlerts(),
   ]);
+
+  const alertItems = [
+    alerts.newOrders > 0 && {
+      href: '/admin/bestellingen',
+      text: `${alerts.newOrders} nieuwe bestelling${alerts.newOrders === 1 ? '' : 'en'} — klaar om te verwerken`,
+    },
+    alerts.unreadMessages > 0 && {
+      href: '/admin/berichten',
+      text: `${alerts.unreadMessages} ongelezen bericht${alerts.unreadMessages === 1 ? '' : 'en'}`,
+    },
+    alerts.pendingReviews > 0 && {
+      href: '/admin/reviews',
+      text: `${alerts.pendingReviews} review${alerts.pendingReviews === 1 ? '' : 's'} wacht${alerts.pendingReviews === 1 ? '' : 'en'} op moderatie`,
+    },
+  ].filter(Boolean) as { href: string; text: string }[];
 
   const topCodes = Object.values(discountStats).sort((a, b) => b.orders - a.orders || b.revenue - a.revenue).slice(0, 5);
   const bestCode = topCodes[0];
@@ -51,6 +68,33 @@ export default async function AdminDashboardPage() {
           <BookOpen size={15} /> Handleiding
         </Link>
       </div>
+
+      {/* Actie-notificatie: werk dat opgepakt moet worden */}
+      {alertItems.length > 0 && (
+        <div className="rounded-[12px] border border-accent/30 bg-accent/[0.06] p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-[10px] bg-accent/15 flex items-center justify-center shrink-0">
+              <Bell size={18} className="text-accent" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-foreground mb-1.5">Er staat werk voor je klaar</p>
+              <ul className="flex flex-col gap-1">
+                {alertItems.map((a) => (
+                  <li key={a.href}>
+                    <Link
+                      href={a.href}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+                    >
+                      {a.text}
+                      <ArrowRight size={14} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       <OnboardingChecklist steps={onboarding.steps} complete={onboarding.complete} />
 

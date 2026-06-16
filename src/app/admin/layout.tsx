@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSupabaseServer } from '@/lib/supabase/server';
+import { getAdminAlerts } from '@/lib/db/admin-alerts';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -68,6 +69,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const visibleLinks = ALL_LINKS.filter((l) => l.roles.includes(role));
 
+  // Notificatie-badges: openstaand werk per sectie.
+  const alerts = await getAdminAlerts();
+  const badges: Record<string, number> = {
+    '/admin/bestellingen': alerts.newOrders,
+    '/admin/berichten': alerts.unreadMessages,
+    '/admin/reviews': alerts.pendingReviews,
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
@@ -92,6 +101,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               <Icon size={16} className="text-muted" />
               {label}
+              {badges[href] > 0 && (
+                <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[11px] font-bold text-white bg-accent rounded-full">
+                  {badges[href] > 99 ? '99+' : badges[href]}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
