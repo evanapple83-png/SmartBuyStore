@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: 'Veelgestelde vragen — Smart Buy St
 const faqs = [
   {
     q: 'Wanneer wordt mijn apparaat bezorgd?',
-    a: 'Bestel je op een werkdag vóór 12:00, dan bezorgen we vandaag nog. Het exacte bezorgvenster zie je via de postcodecheck en in je bevestiging.',
+    a: 'Bestel je op een werkdag vóór 11:00, dan bezorgen we vandaag nog. Het exacte bezorgvenster zie je via de postcodecheck en in je bevestiging.',
   },
   {
     q: 'Wat valt onder de gratis installatie?',
@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: 'Hoe neem ik contact op?',
-    a: 'Mail naar info@sbsnl.nl met je vraag of bestelnummer. We reageren zo snel mogelijk.',
+    a: 'Mail naar info@smartbuystore.nl met je vraag of bestelnummer. We reageren zo snel mogelijk.',
   },
 ];
 

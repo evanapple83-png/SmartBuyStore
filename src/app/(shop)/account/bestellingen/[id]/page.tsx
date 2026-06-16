@@ -113,7 +113,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: { id
       )}
 
       <p className="text-sm text-muted">
-        Vragen over deze bestelling? Mail naar <a href="mailto:info@sbsnl.nl" className="text-primary hover:underline">info@sbsnl.nl</a>.
+        Vragen over deze bestelling? Mail naar <a href="mailto:info@smartbuystore.nl" className="text-primary hover:underline">info@smartbuystore.nl</a>.
       </p>
     </div>
   );

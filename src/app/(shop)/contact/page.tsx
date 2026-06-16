@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Contact — Smart Buy Store' };
 
 export default async function ContactPage() {
   const settings = await getStoreSettings();
-  const email = settings.company_email || 'info@sbsnl.nl';
+  const email = settings.company_email || 'info@smartbuystore.nl';
 
   return (
     <ContentPage
@@ -51,7 +51,7 @@ export default async function ContactPage() {
           </li>
           <li className="flex items-start gap-2">
             <Clock size={16} className="text-primary shrink-0 mt-0.5" />
-            <span>Bestel vóór 12:00 op werkdagen voor bezorging dezelfde dag.</span>
+            <span>Bestel vóór 11:00 op werkdagen voor bezorging dezelfde dag.</span>
           </li>
         </ul>
       </ContentSection>

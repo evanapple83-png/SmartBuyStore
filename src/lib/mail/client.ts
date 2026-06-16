@@ -13,7 +13,7 @@ export function isMailConfigured(): boolean {
 
 function fromAddress(): string {
   const name = process.env.MAIL_FROM_NAME || 'Smart Buy Store';
-  const addr = process.env.MAIL_FROM_ADDRESS || 'noreply@smartbuystore.nl';
+  const addr = process.env.MAIL_FROM_ADDRESS || 'info@smartbuystore.nl';
   return `${name} <${addr}>`;
 }
 

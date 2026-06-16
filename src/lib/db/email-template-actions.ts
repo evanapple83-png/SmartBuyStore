@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { ensureAdmin } from './admin-guard';
+import { logAdminAction } from './admin-log';
 
 export async function updateEmailTemplate(
   key: string,
@@ -25,6 +26,7 @@ export async function updateEmailTemplate(
     .eq('key', key);
   if (error) return { ok: false, error: error.message };
 
+  await logAdminAction({ action: 'update', entity: 'email_template', entityId: key, label: subject });
   revalidatePath('/admin/e-mailtemplates');
   return { ok: true };
 }
@@ -44,6 +46,7 @@ export async function toggleEmailTemplate(
     .update({ is_enabled: enabled })
     .eq('key', key);
   if (error) return { ok: false, error: error.message };
+  await logAdminAction({ action: 'update', entity: 'email_template', entityId: key, label: enabled ? 'Ingeschakeld' : 'Uitgeschakeld' });
   revalidatePath('/admin/e-mailtemplates');
   return { ok: true };
 }

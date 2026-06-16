@@ -48,8 +48,8 @@ export default function CookiebeleidPage() {
       <ContentSection title="Vragen?">
         <p>
           Heb je vragen over ons cookiegebruik? Mail naar{' '}
-          <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">
-            info@sbsnl.nl
+          <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">
+            info@smartbuystore.nl
           </a>
           .
         </p>

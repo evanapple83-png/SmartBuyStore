@@ -229,7 +229,7 @@ export function CheckoutForm({ prefill }: Props) {
               <div>
                 <div className="font-medium text-sm">Same-day bezorging</div>
                 <div className="text-xs text-muted">
-                  Vandaag besteld voor 12:00 → vandaag bezorgd. Alleen in Friesland, Groningen, Drenthe, Overijssel, Flevoland en Gelderland.
+                  Vandaag besteld voor 11:00 → vandaag bezorgd. Alleen in Friesland, Groningen, Drenthe, Overijssel, Flevoland en Gelderland.
                 </div>
                 {sameDayChecked === false && (
                   <div className="text-xs text-amber-700 mt-1">⚠ Niet beschikbaar voor postcode <strong>{postal}</strong>.</div>

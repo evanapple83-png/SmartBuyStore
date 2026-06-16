@@ -63,7 +63,7 @@ const faqs = [
   },
   {
     q: 'Wanneer wordt mijn apparaat bezorgd?',
-    a: 'Bestel je vóór 12:00, dan bezorgen we vandaag nog. Het exacte bezorgvenster zie je via de postcodecheck en in je bevestiging.',
+    a: 'Bestel je vóór 11:00, dan bezorgen we vandaag nog. Het exacte bezorgvenster zie je via de postcodecheck en in je bevestiging.',
   },
   {
     q: 'Kan ik achteraf betalen?',
@@ -89,8 +89,8 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
           icon: Truck,
           text:
             beforeCutoff === false
-              ? 'Morgen in huis — besteltijd voor vandaag (12:00) is verstreken'
-              : 'Vandaag bezorgd indien besteld voor 12:00',
+              ? 'Morgen in huis — besteltijd voor vandaag (11:00) is verstreken'
+              : 'Vandaag bezorgd indien besteld voor 11:00',
         }
       : { icon: Truck, text: 'Levering binnen 3 tot 5 werkdagen' },
     ...trustListBase,
@@ -203,7 +203,7 @@ export function ProductDetail({ product, related, reviews }: ProductDetailProps)
                   ? 'Op voorraad — morgen in huis'
                   : beforeCutoff === true
                     ? 'Op voorraad — beschikbaar voor levering vandaag'
-                    : 'Op voorraad — vóór 12:00 besteld = vandaag in huis'}
+                    : 'Op voorraad — vóór 11:00 besteld = vandaag in huis'}
           </p>
 
           {/* CTA */}

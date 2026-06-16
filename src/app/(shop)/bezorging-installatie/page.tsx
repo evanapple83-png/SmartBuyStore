@@ -101,7 +101,7 @@ const conditions = [
 ];
 
 const steps = [
-  'Bestel je apparaat en kies — op werkdagen vóór 12:00 — voor bezorging dezelfde dag.',
+  'Bestel je apparaat en kies — op werkdagen vóór 11:00 — voor bezorging dezelfde dag.',
   'Je ontvangt een bevestiging met het bezorgvenster.',
   'Ons eigen team bezorgt, plaatst en sluit aan, en test of alles naar behoren werkt.',
   'We nemen het verpakkingsmateriaal en — gratis — je oude apparaat weer mee.',

@@ -19,8 +19,8 @@ export default function PrivacyPage() {
           KvK 42000760
           <br />
           E-mail:{' '}
-          <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">
-            info@sbsnl.nl
+          <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">
+            info@smartbuystore.nl
           </a>
         </p>
       </ContentSection>
@@ -74,8 +74,8 @@ export default function PrivacyPage() {
         <p>
           Je hebt het recht op inzage, correctie, verwijdering en overdracht van je gegevens, en je kunt bezwaar
           maken tegen verwerking of je toestemming intrekken. Stuur hiervoor een e-mail naar{' '}
-          <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">
-            info@sbsnl.nl
+          <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">
+            info@smartbuystore.nl
           </a>
           . Je hebt ook het recht een klacht in te dienen bij de Autoriteit Persoonsgegevens.
         </p>

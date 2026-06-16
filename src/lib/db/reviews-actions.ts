@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { ensureAdminOrStaff } from './admin-guard';
+import { logAdminAction } from './admin-log';
 
 const PAID = ['paid', 'in_progress', 'planned_delivery', 'delivered', 'completed'];
 
@@ -56,6 +57,7 @@ export async function setReviewStatus(id: string, status: 'published' | 'rejecte
   try { await ensureAdminOrStaff(); } catch (e: any) { return { ok: false, error: e.message }; }
   const { error } = await getSupabaseAdmin().from('sbs_reviews').update({ status }).eq('id', id);
   if (error) return { ok: false, error: error.message };
+  await logAdminAction({ action: 'status', entity: 'review', entityId: id, label: status });
   revalidatePath('/admin/reviews');
   return { ok: true };
 }
@@ -64,6 +66,7 @@ export async function deleteReview(id: string): Promise<{ ok: boolean; error?: s
   try { await ensureAdminOrStaff(); } catch (e: any) { return { ok: false, error: e.message }; }
   const { error } = await getSupabaseAdmin().from('sbs_reviews').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
+  await logAdminAction({ action: 'delete', entity: 'review', entityId: id });
   revalidatePath('/admin/reviews');
   return { ok: true };
 }

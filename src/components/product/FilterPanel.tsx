@@ -69,6 +69,66 @@ export function FilterPanel({ facets, state, onChange }: FilterPanelProps) {
         />
       )}
 
+      {/* Geluidsniveau */}
+      {facets.noise.length >= 2 && (
+        <CheckboxGroup
+          title="Geluidsniveau"
+          options={facets.noise}
+          selected={state.noise}
+          onToggle={(v) => set({ noise: toggle(state.noise, v) })}
+        />
+      )}
+
+      {/* Inhoud (koelkasten) */}
+      {facets.capacities.length >= 2 && (
+        <CheckboxGroup
+          title="Inhoud"
+          options={facets.capacities}
+          selected={state.capacities}
+          onToggle={(v) => set({ capacities: toggle(state.capacities, v) })}
+        />
+      )}
+
+      {/* Vulgewicht (wasmachines) */}
+      {facets.loads.length >= 2 && (
+        <CheckboxGroup
+          title="Vulgewicht"
+          options={facets.loads}
+          selected={state.loads}
+          onToggle={(v) => set({ loads: toggle(state.loads, v) })}
+        />
+      )}
+
+      {/* Centrifugesnelheid (wasmachines) */}
+      {facets.spins.length >= 2 && (
+        <CheckboxGroup
+          title="Centrifugesnelheid"
+          options={facets.spins}
+          selected={state.spins}
+          onToggle={(v) => set({ spins: toggle(state.spins, v) })}
+        />
+      )}
+
+      {/* Aantal couverts (vaatwassers) */}
+      {facets.couverts.length >= 2 && (
+        <CheckboxGroup
+          title="Aantal couverts"
+          options={facets.couverts}
+          selected={state.couverts}
+          onToggle={(v) => set({ couverts: toggle(state.couverts, v) })}
+        />
+      )}
+
+      {/* Breedte */}
+      {facets.widths.length >= 2 && (
+        <CheckboxGroup
+          title="Breedte"
+          options={facets.widths}
+          selected={state.widths}
+          onToggle={(v) => set({ widths: toggle(state.widths, v) })}
+        />
+      )}
+
       {/* Type */}
       {facets.types.length >= 2 && (
         <CheckboxGroup

@@ -13,8 +13,8 @@ export default function VoorwaardenPage() {
         <p>
           Smart Buy Store V.O.F., gevestigd aan de Newtonweg 15, 8013 RD Zwolle, ingeschreven bij de Kamer van
           Koophandel onder nummer 42000760. Contact:{' '}
-          <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">
-            info@sbsnl.nl
+          <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">
+            info@smartbuystore.nl
           </a>
           .
         </p>
@@ -31,7 +31,7 @@ export default function VoorwaardenPage() {
       <ContentSection title="3. Bestellen en betalen">
         <p>
           De overeenkomst komt tot stand zodra wij je bestelling bevestigen. Betalen kan veilig via iDEAL,
-          Klarna, Visa en Mastercard. Bestel je vóór 12:00, dan streven we naar bezorging dezelfde dag.
+          Klarna, Visa en Mastercard. Bestel je vóór 11:00, dan streven we naar bezorging dezelfde dag.
         </p>
       </ContentSection>
 
@@ -46,8 +46,8 @@ export default function VoorwaardenPage() {
         <p>
           Je hebt het recht je bestelling binnen 30 dagen na ontvangst zonder opgaaf van reden te retourneren.
           Het product moet onbeschadigd en compleet zijn. Neem voor een retour contact op via{' '}
-          <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">
-            info@sbsnl.nl
+          <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">
+            info@smartbuystore.nl
           </a>
           . Het herroepingsrecht geldt niet voor producten die om hygiënische redenen of door maatwerk zijn
           uitgesloten.
@@ -71,8 +71,8 @@ export default function VoorwaardenPage() {
       <ContentSection title="8. Klachten en toepasselijk recht">
         <p>
           Heb je een klacht? Mail naar{' '}
-          <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">
-            info@sbsnl.nl
+          <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">
+            info@smartbuystore.nl
           </a>{' '}
           en we zoeken samen naar een oplossing. Op alle overeenkomsten is Nederlands recht van toepassing.
         </p>

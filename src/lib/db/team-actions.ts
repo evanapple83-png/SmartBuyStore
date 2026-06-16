@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { ensureAdmin } from './admin-guard';
+import { logAdminAction } from './admin-log';
 
 type TeamRole = 'admin' | 'staff' | 'delivery';
 const TEAM_ROLES: TeamRole[] = ['admin', 'staff', 'delivery'];
@@ -55,6 +56,7 @@ export async function createTeamMember(
     return { ok: false, error: profErr.message };
   }
 
+  await logAdminAction({ action: 'create', entity: 'team', entityId: userId, label: `${full_name} (${role})` });
   revalidatePath('/admin/accounts');
   revalidatePath('/admin/klanten');
   return { ok: true };
@@ -77,6 +79,7 @@ export async function updateTeamRole(
     // De DB-trigger 'protect_last_admin' kan dit blokkeren.
     return { ok: false, error: humanize(error.message) };
   }
+  await logAdminAction({ action: 'update', entity: 'team', entityId: userId, label: `Rol → ${role}` });
   revalidatePath('/admin/accounts');
   return { ok: true };
 }
@@ -93,6 +96,7 @@ export async function toggleTeamActive(
   const admin = getSupabaseAdmin();
   const { error } = await admin.from('sbs_profiles').update({ is_active: isActive }).eq('id', userId);
   if (error) return { ok: false, error: humanize(error.message) };
+  await logAdminAction({ action: 'update', entity: 'team', entityId: userId, label: isActive ? 'Geactiveerd' : 'Gedeactiveerd' });
   revalidatePath('/admin/accounts');
   return { ok: true };
 }

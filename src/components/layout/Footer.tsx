@@ -48,8 +48,8 @@ export async function Footer() {
             <div className="flex flex-col gap-2 text-sm text-white/70">
               <div className="flex items-center gap-2">
                 <Mail size={14} className="text-success shrink-0" />
-                <a href="mailto:info@sbsnl.nl" className="hover:text-white transition-colors cursor-pointer">
-                  info@sbsnl.nl
+                <a href="mailto:info@smartbuystore.nl" className="hover:text-white transition-colors cursor-pointer">
+                  info@smartbuystore.nl
                 </a>
               </div>
               {settings.company_phone && (

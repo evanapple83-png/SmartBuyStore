@@ -4,7 +4,7 @@ const usps = [
   {
     icon: Zap,
     title: 'Zelfde dag bezorging',
-    desc: 'Besteld voor 12:00? Vandaag nog in huis. Gegarandeerd.',
+    desc: 'Besteld voor 11:00? Vandaag nog in huis. Gegarandeerd.',
     color: 'text-accent bg-accent/10',
   },
   {

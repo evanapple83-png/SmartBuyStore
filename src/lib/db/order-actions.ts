@@ -6,6 +6,7 @@ import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getMollieClient, isMollieConfigured, getRedirectUrl, getWebhookUrl } from '@/lib/mollie/client';
 import { validateDiscountCode, incrementDiscountUse } from './discount-codes';
 import { dispatchOrderEmail } from '@/lib/mail/dispatch';
+import { logAdminAction } from './admin-log';
 import type { OrderStatus } from './orders';
 
 const BTW_RATE = 21;
@@ -366,6 +367,13 @@ export async function updateOrderStatus(
     await dispatchOrderEmail(orderId, emailEvent);
   }
 
+  await logAdminAction({
+    action: 'status',
+    entity: 'order',
+    entityId: orderId,
+    label: `${currentStatus} → ${toStatus}`,
+    details: options?.note?.trim() ? { note: options.note.trim() } : null,
+  });
   revalidatePath('/admin/bestellingen');
   revalidatePath(`/admin/bestellingen/${orderId}`);
   revalidatePath('/account/bestellingen');

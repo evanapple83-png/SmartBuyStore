@@ -7,7 +7,7 @@ import { useBeforeCutoff } from '@/hooks/useDeliveryPromise';
 /**
  * Bezorgcheck op postcode. Checkt het cijferdeel tegen het echte
  * same-day-gebied (Friesland, Groningen, Drenthe, Overijssel, Flevoland,
- * Gelderland) en respecteert de 12:00-besteldeadline. Buiten het gebied of
+ * Gelderland) en respecteert de 11:00-besteldeadline. Buiten het gebied of
  * zonder same-day/voorraad is de eerlijke belofte 3-5 werkdagen.
  */
 export function PostcodeChecker({ sameDayAvailable = true }: { sameDayAvailable?: boolean }) {
@@ -63,7 +63,7 @@ export function PostcodeChecker({ sameDayAvailable = true }: { sameDayAvailable?
               <li className="flex items-center gap-2 text-sm text-foreground">
                 <Clock size={14} className="text-warm shrink-0" />
                 <span>
-                  Besteltijd voor vandaag (12:00) is verstreken — <strong>morgen</strong> bezorgd tussen{' '}
+                  Besteltijd voor vandaag (11:00) is verstreken — <strong>morgen</strong> bezorgd tussen{' '}
                   <strong>18:00–22:00</strong>
                 </span>
               </li>
@@ -71,7 +71,7 @@ export function PostcodeChecker({ sameDayAvailable = true }: { sameDayAvailable?
               <li className="flex items-center gap-2 text-sm text-foreground">
                 <Truck size={14} className="text-success shrink-0" />
                 <span>
-                  Vóór 12:00 besteld = <strong>vandaag</strong> bezorgd tussen <strong>18:00–22:00</strong>
+                  Vóór 11:00 besteld = <strong>vandaag</strong> bezorgd tussen <strong>18:00–22:00</strong>
                 </span>
               </li>
             )

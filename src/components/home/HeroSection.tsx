@@ -38,7 +38,7 @@ export function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-success/20 text-success text-xs font-bold px-3 py-1.5 rounded-pill mb-6">
               <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              Vandaag nog bezorgd — bestel voor 12:00
+              Vandaag nog bezorgd — bestel voor 11:00
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black leading-tight mb-5">
@@ -50,7 +50,7 @@ export function HeroSection() {
             </h1>
 
             <p className="text-white/80 text-lg leading-relaxed mb-8 max-w-md">
-              Topmerken witgoed. Vandaag besteld voor 12:00 = vandaag in huis, professioneel geïnstalleerd. Gratis.
+              Topmerken witgoed. Vandaag besteld voor 11:00 = vandaag in huis, professioneel geïnstalleerd. Gratis.
             </p>
 
             <div className="flex flex-wrap gap-3 mb-8">

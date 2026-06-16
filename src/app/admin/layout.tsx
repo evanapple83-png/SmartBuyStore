@@ -18,6 +18,7 @@ import {
   MessageSquare,
   BookOpen,
   LogOut,
+  ScrollText,
 } from 'lucide-react';
 
 /**
@@ -46,6 +47,7 @@ const ALL_LINKS: { href: string; label: string; icon: any; roles: Role[] }[] = [
   { href: '/admin/e-mailtemplates', label: 'E-mailtemplates', icon: Mail,            roles: ['admin'] },
   { href: '/admin/bezorgplanning', label: 'Bezorgplanning',   icon: Truck,           roles: ['admin', 'staff', 'delivery'] },
   { href: '/admin/accounts',       label: 'Team',             icon: UserCog,         roles: ['admin'] },
+  { href: '/admin/logboek',        label: 'Logboek',          icon: ScrollText,      roles: ['admin'] },
   { href: '/admin/instellingen',   label: 'Instellingen',     icon: Settings,        roles: ['admin'] },
 ];
 
@@ -73,7 +75,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="p-4 border-b border-border">
           <Link href="/admin" className="flex items-center gap-2">
             <span className="text-lg font-display font-black tracking-tight">
-              Smart<span className="text-accent">Buy</span>
+              Smartbuy<span className="text-accent">store</span>
             </span>
             <span className="text-xs font-semibold text-muted bg-background border border-border rounded-full px-2 py-0.5">
               ADMIN

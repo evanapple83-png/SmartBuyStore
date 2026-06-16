@@ -21,7 +21,7 @@ export default function OverOnsPage() {
             zelf oud apparaat wegbrengen.
           </p>
           <p className="text-muted leading-relaxed">
-            Wij doen het anders. Vandaag besteld voor 12:00? Vandaag bezorgd, geïnstalleerd en oud apparaat meegenomen.
+            Wij doen het anders. Vandaag besteld voor 11:00? Vandaag bezorgd, geïnstalleerd en oud apparaat meegenomen.
             Gratis. Altijd.
           </p>
         </div>

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getSupabaseServer } from '@/lib/supabase/server';
+import { logAdminAction } from './admin-log';
 
 // Hulpfunctie: slug genereren uit naam
 function slugify(s: string): string {
@@ -89,6 +90,36 @@ function parseSpecs(formData: FormData): Record<string, string> {
 }
 
 /**
+ * Gestructureerde filter-eigenschappen (kolom `attributes`, JSONB). Deze voeden
+ * de facetten in de winkel (geluidsniveau, inhoud, breedte, couverts, etc.).
+ * Lege velden worden weggelaten zodat ze geen lege facetten opleveren.
+ */
+function parseAttributes(formData: FormData): Record<string, unknown> {
+  const attrs: Record<string, unknown> = {};
+  const str = (k: string) => String(formData.get(k) || '').trim() || undefined;
+  const num = (k: string) => {
+    const raw = String(formData.get(k) || '').trim().replace(',', '.');
+    if (!raw) return undefined;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : undefined;
+  };
+  const put = (k: string, v: unknown) => {
+    if (v !== undefined) attrs[k] = v;
+  };
+  put('type', str('attr_type'));
+  put('color', str('attr_color'));
+  put('build_type', str('attr_build_type'));
+  if (formData.get('attr_no_frost') === 'on') attrs.no_frost = true;
+  put('capacity_total_l', num('attr_capacity_total_l'));
+  put('width_cm', num('attr_width_cm'));
+  put('noise_db', num('attr_noise_db'));
+  put('load_kg', num('attr_load_kg'));
+  put('spin_rpm', num('attr_spin_rpm'));
+  put('couverts', num('attr_couverts'));
+  return attrs;
+}
+
+/**
  * Inkoopprijs + marge opslaan in de admin-only tabel sbs_product_costs.
  * Lege inkoopprijs = rij verwijderen. Best-effort vóór de redirect; een
  * RLS-/migratiefout mag het product-opslaan zelf niet blokkeren.
@@ -172,6 +203,7 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
     image_primary: String(formData.get('image_primary') || '') || null,
     image_fallback: String(formData.get('image_fallback') || '') || null,
     specs: parseSpecs(formData),
+    attributes: parseAttributes(formData),
     ...media.fields,
   };
 
@@ -185,6 +217,7 @@ export async function createProduct(formData: FormData): Promise<ProductFormStat
   // Best-effort: faalt dit (bv. migratie 0014 nog niet gedraaid), dan is het
   // product wél aangemaakt en kan inkoop/marge op de bewerkpagina opnieuw.
   await saveProductCosts(supabase, data.id, formData);
+  await logAdminAction({ action: 'create', entity: 'product', entityId: data.id, label: name });
 
   revalidatePath('/admin/producten');
   redirect(`/admin/producten/${data.id}`);
@@ -232,6 +265,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     image_primary: String(formData.get('image_primary') || '') || null,
     image_fallback: String(formData.get('image_fallback') || '') || null,
     specs: parseSpecs(formData),
+    attributes: parseAttributes(formData),
     ...media.fields,
   };
 
@@ -244,6 +278,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
   }
 
   const costsError = await saveProductCosts(supabase, id, formData);
+  await logAdminAction({ action: 'update', entity: 'product', entityId: id, label: name });
 
   revalidatePath('/admin/producten');
   revalidatePath(`/admin/producten/${id}`);
@@ -257,6 +292,7 @@ export async function toggleProductHidden(id: string, hidden: boolean) {
   const supabase = await ensureAdminOrStaff();
   const { error } = await supabase.from('sbs_products').update({ is_hidden: hidden }).eq('id', id);
   if (error) throw error;
+  await logAdminAction({ action: 'update', entity: 'product', entityId: id, label: hidden ? 'Verborgen' : 'Zichtbaar gemaakt' });
   revalidatePath('/admin/producten');
   revalidatePath('/');
 }
@@ -290,6 +326,7 @@ export async function upsertCategory(formData: FormData) {
     }
   }
 
+  await logAdminAction({ action: id ? 'update' : 'create', entity: 'category', entityId: id || slug, label: name });
   revalidatePath('/admin/categorieen');
   revalidatePath('/');
   return { ok: true };
@@ -305,6 +342,7 @@ export async function toggleCategoryActive(id: string, active: boolean) {
     .update({ is_active: active })
     .eq('id', id);
   if (error) throw error;
+  await logAdminAction({ action: 'update', entity: 'category', entityId: id, label: active ? 'Geactiveerd' : 'Gedeactiveerd' });
   revalidatePath('/admin/categorieen');
   revalidatePath('/');
 }
@@ -335,6 +373,7 @@ export async function upsertBrand(formData: FormData) {
     if (error) return { ok: false, error: error.code === '23505' ? 'Slug bestaat al' : error.message };
   }
 
+  await logAdminAction({ action: id ? 'update' : 'create', entity: 'brand', entityId: id || slug, label: name });
   revalidatePath('/admin/merken');
   revalidatePath('/merken');
   revalidatePath('/');
@@ -345,6 +384,7 @@ export async function toggleBrandActive(id: string, active: boolean) {
   const supabase = await ensureAdminOrStaff();
   const { error } = await supabase.from('sbs_brands').update({ is_active: active }).eq('id', id);
   if (error) throw error;
+  await logAdminAction({ action: 'update', entity: 'brand', entityId: id, label: active ? 'Geactiveerd' : 'Gedeactiveerd' });
   revalidatePath('/admin/merken');
   revalidatePath('/merken');
 }
@@ -363,6 +403,7 @@ export async function updateCustomerProfile(id: string, formData: FormData) {
     .eq('id', id);
   if (error) return { ok: false, error: error.message };
 
+  await logAdminAction({ action: 'update', entity: 'customer', entityId: id, label: full_name || undefined });
   revalidatePath('/admin/klanten');
   revalidatePath(`/admin/klanten/${id}`);
   return { ok: true };

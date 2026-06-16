@@ -36,8 +36,8 @@ export default async function MerkenPage() {
           alle producten
         </Link>{' '}
         of mail ons via{' '}
-        <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">
-          info@sbsnl.nl
+        <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">
+          info@smartbuystore.nl
         </a>
         .
       </p>

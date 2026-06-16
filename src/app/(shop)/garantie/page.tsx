@@ -40,7 +40,7 @@ export default function GarantiePage() {
 
       <ContentSection title="4. Een garantieclaim indienen">
         <ol className={ol}>
-          <li>Meld een storing via <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">info@sbsnl.nl</a> onder vermelding van je <strong>bestelnummer</strong>, een omschrijving van het probleem en — indien mogelijk — foto's of video.</li>
+          <li>Meld een storing via <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">info@smartbuystore.nl</a> onder vermelding van je <strong>bestelnummer</strong>, een omschrijving van het probleem en — indien mogelijk — foto's of video.</li>
           <li>Wij beoordelen de melding en plannen vervolgens onderzoek, reparatie of vervanging in.</li>
           <li>Stellen wij vast dat er <strong>geen sprake is van een garantiegebrek</strong> (bijvoorbeeld door verkeerd gebruik of een van de uitsluitingen onder 2), dan kunnen wij onderzoeks- en voorrijkosten in rekening brengen.</li>
         </ol>

@@ -4,7 +4,7 @@ const trustBlocks = [
   {
     icon: Clock,
     title: 'Zelfde dag bezorging',
-    desc: 'Besteld voor 12:00 = vandaag bezorgd. Eigen team, geen externe bezorgdienst.',
+    desc: 'Besteld voor 11:00 = vandaag bezorgd. Eigen team, geen externe bezorgdienst.',
     stat: '< 24u',
     color: 'text-accent bg-accent/10',
   },

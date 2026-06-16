@@ -18,11 +18,11 @@ export default async function RetourPage() {
   return (
     <ContentPage
       title="Retourvoorwaarden"
-      intro="Hieronder lees je de voorwaarden waaronder Smart Buy Store retouren accepteert. Houd je hieraan, dan verloopt je retour vlot. Producten die niet aan deze voorwaarden voldoen, kunnen wij weigeren of onder aftrek van waardevermindering verwerken."
+      intro="Je hebt bij Smartbuystore 30 dagen retourrecht. De eerste 14 dagen is dat je wettelijke bedenktijd, waarin je het product — net als in een winkel — mag beoordelen. Dag 15 tot en met 30 is een extra coulanceregeling van ons, waarvoor strengere voorwaarden gelden (ongeopend en ongebruikt). Hieronder lees je precies waar een retour aan moet voldoen. Producten die niet aan deze voorwaarden voldoen, kunnen wij weigeren of onder aftrek van waardevermindering verwerken."
     >
       <ContentSection title="1. Retour aanmelden">
         <ol className={ol}>
-          <li>Je meldt een retour <strong>binnen 30 dagen</strong> na ontvangst aan via <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">info@sbsnl.nl</a> of telefonisch, onder vermelding van je <strong>bestelnummer</strong> en de reden.</li>
+          <li>Je meldt een retour <strong>binnen 30 dagen</strong> na ontvangst aan via <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">info@smartbuystore.nl</a> of telefonisch, onder vermelding van je <strong>bestelnummer</strong> en de reden.</li>
           <li>Een retour die niet vooraf is aangemeld en door ons bevestigd, nemen wij niet in behandeling.</li>
           <li>Na onze bevestiging stuur je het product binnen <strong>14 dagen</strong> retour of houd je het klaar voor ophalen.</li>
         </ol>
@@ -30,11 +30,14 @@ export default async function RetourPage() {
 
       <ContentSection title="2. Voorwaarden waaraan een retour moet voldoen">
         <ol className={ol}>
-          <li>Het product is <strong>ongebruikt</strong>; je mag het uitsluitend kort beoordelen zoals in een winkel.</li>
-          <li>Het product is <strong>onbeschadigd en compleet</strong>, met alle accessoires, documentatie en toebehoren.</li>
-          <li>Het product wordt aangeboden in de <strong>originele, onbeschadigde verpakking</strong>.</li>
+          <li>Het product is <strong>ongebruikt</strong> en verkeert in <strong>nieuwstaat</strong>. Je mag het uitsluitend kort beoordelen zoals je in een winkel zou doen; verder gebruik (een wasprogramma draaien, een koelkast aanzetten, levensmiddelen plaatsen, water aansluiten) maakt het product gebruikt.</li>
+          <li>Het apparaat is <strong>niet geïnstalleerd, aangesloten of gemonteerd</strong> geweest.</li>
+          <li>Het product is <strong>compleet</strong>: alle accessoires, kabels, handleidingen, garantiebewijzen en toebehoren zijn aanwezig.</li>
+          <li>Beschermfolie, stickers en eventuele <strong>verzegelingen zijn intact</strong> en niet verwijderd.</li>
+          <li>Het product zit in de <strong>originele, onbeschadigde verpakking</strong> (de doos mag niet beschreven, dichtgetaped met vreemde tape of beschadigd zijn). Gebruik de doos niet als verzenddoos zonder extra omverpakking.</li>
           <li>Je kunt een geldig <strong>aankoopbewijs</strong> (bestelnummer) overleggen.</li>
-          <li>Voor retouren na de wettelijke bedenktijd van 14 dagen (dag 15 t/m 30) gelden de eisen onder 2.1 en 2.3 als harde voorwaarde: zonder originele verpakking en ongebruikte staat kunnen wij de retour weigeren.</li>
+          <li><strong>Dag 1 t/m 14 (wettelijke bedenktijd):</strong> je mag de verpakking openen en het product beoordelen. Beoordeel je verder dan nodig, dan kunnen wij waardevermindering verrekenen (zie punt 4).</li>
+          <li><strong>Dag 15 t/m 30 (onze extra coulance):</strong> we nemen het product alleen terug als de <strong>doos ongeopend</strong> is, de verzegeling intact is en het apparaat volstrekt <strong>ongebruikt</strong> is. Is de verpakking geopend of het apparaat gebruikt, dan vervalt het retourrecht voor deze periode.</li>
         </ol>
       </ContentSection>
 
@@ -72,7 +75,7 @@ export default async function RetourPage() {
       <ContentSection title="7. Slotbepaling">
         <p className="text-muted">
           Deze voorwaarden laten je dwingendrechtelijke consumentenrechten onverlet. Heb je een vraag over je retour?
-          Neem dan contact met ons op via <a href="mailto:info@sbsnl.nl" className="text-primary underline hover:no-underline">info@sbsnl.nl</a>.
+          Neem dan contact met ons op via <a href="mailto:info@smartbuystore.nl" className="text-primary underline hover:no-underline">info@smartbuystore.nl</a>.
           Laatst bijgewerkt: 30 mei 2026.
         </p>
       </ContentSection>

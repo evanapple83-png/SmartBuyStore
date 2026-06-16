@@ -4,9 +4,22 @@ import {
   CATEGORY_LABELS,
   EMPTY_FILTERS,
   countActiveFilters,
+  NOISE_BUCKETS,
+  WIDTH_BUCKETS,
+  CAPACITY_BUCKETS,
+  LOAD_BUCKETS,
+  SPIN_BUCKETS,
   type FilterState,
 } from '@/lib/catalog-filters';
 import type { Category } from '@/types/product';
+
+/** Bucket-sleutel → leesbaar label, voor de filter-chips. */
+const BUCKET_LABEL: Record<string, string> = Object.fromEntries(
+  [...NOISE_BUCKETS, ...WIDTH_BUCKETS, ...CAPACITY_BUCKETS, ...LOAD_BUCKETS, ...SPIN_BUCKETS].map((b) => [
+    b.key,
+    b.label,
+  ])
+);
 
 interface Chip {
   label: string;
@@ -33,6 +46,12 @@ export function ActiveFilterChips({
     { key: 'types', label: (v) => v },
     { key: 'colors', label: (v) => v },
     { key: 'buildTypes', label: (v) => v.charAt(0).toUpperCase() + v.slice(1) },
+    { key: 'couverts', label: (v) => `${v} couverts` },
+    { key: 'noise', label: (v) => BUCKET_LABEL[v] ?? v },
+    { key: 'capacities', label: (v) => BUCKET_LABEL[v] ?? v },
+    { key: 'loads', label: (v) => BUCKET_LABEL[v] ?? v },
+    { key: 'spins', label: (v) => BUCKET_LABEL[v] ?? v },
+    { key: 'widths', label: (v) => BUCKET_LABEL[v] ?? v },
   ];
 
   for (const { key, label } of arrayFacets) {

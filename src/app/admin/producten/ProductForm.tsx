@@ -24,6 +24,7 @@ export function ProductForm({ mode, brands, categories, initial, initialCosts }:
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmPriceZero, setConfirmPriceZero] = useState(false);
+  const attrs = ((initial?.attributes as Record<string, any>) || {});
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -112,6 +113,37 @@ export function ProductForm({ mode, brands, categories, initial, initialCosts }:
       <div className="bg-surface border border-border rounded-[12px] p-6">
         <h2 className="text-sm font-semibold text-foreground mb-4">Specificaties</h2>
         <SpecsEditor defaultValue={initial?.specs || {}} />
+      </div>
+
+      <div className="bg-surface border border-border rounded-[12px] p-6">
+        <h2 className="text-sm font-semibold text-foreground mb-1">Eigenschappen (voor filters)</h2>
+        <p className="text-xs text-muted mb-4">
+          Deze velden voeden de filters in de webshop (geluidsniveau, inhoud, breedte, couverts, etc.). Vul alleen in
+          wat van toepassing is op dit apparaat — lege velden leveren geen filter op.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Field label="Type" name="attr_type" defaultValue={attrs.type || ''} hint="Bv. Multidoor, Voorlader, Inbouw" />
+          <Field label="Kleur" name="attr_color" defaultValue={attrs.color || ''} hint="Bv. RVS, Wit, Zwart" />
+          <SelectField
+            label="Uitvoering"
+            name="attr_build_type"
+            defaultValue={attrs.build_type || ''}
+            options={[
+              { value: '', label: '—' },
+              { value: 'vrijstaand', label: 'Vrijstaand' },
+              { value: 'inbouw', label: 'Inbouw' },
+            ]}
+          />
+          <Field label="Inhoud totaal (liter)" name="attr_capacity_total_l" type="number" min="0" step="1" defaultValue={attrs.capacity_total_l?.toString() || ''} hint="Koelkasten" />
+          <Field label="Breedte (cm)" name="attr_width_cm" type="number" min="0" step="0.1" defaultValue={attrs.width_cm?.toString() || ''} />
+          <Field label="Geluidsniveau (dB)" name="attr_noise_db" type="number" min="0" step="1" defaultValue={attrs.noise_db?.toString() || ''} />
+          <Field label="Vulgewicht (kg)" name="attr_load_kg" type="number" min="0" step="0.1" defaultValue={attrs.load_kg?.toString() || ''} hint="Wasmachines/drogers" />
+          <Field label="Centrifugesnelheid (tpm)" name="attr_spin_rpm" type="number" min="0" step="100" defaultValue={attrs.spin_rpm?.toString() || ''} hint="Wasmachines" />
+          <Field label="Aantal couverts" name="attr_couverts" type="number" min="0" step="1" defaultValue={attrs.couverts?.toString() || ''} hint="Vaatwassers" />
+        </div>
+        <div className="mt-4">
+          <Checkbox label="No Frost" name="attr_no_frost" defaultChecked={attrs.no_frost === true} hint="Koel-/vriesapparaten met No Frost-technologie." />
+        </div>
       </div>
 
       <div className="bg-surface border border-border rounded-[12px] p-6">

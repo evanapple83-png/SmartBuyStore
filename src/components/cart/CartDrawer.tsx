@@ -27,8 +27,8 @@ export function CartDrawer() {
       icon: Truck,
       text:
         beforeCutoff === false
-          ? 'Morgen in huis — besteltijd voor vandaag (12:00) is verstreken'
-          : 'Vandaag bezorgd indien besteld voor 12:00',
+          ? 'Morgen in huis — besteltijd voor vandaag (11:00) is verstreken'
+          : 'Vandaag bezorgd indien besteld voor 11:00',
     },
     ...trustItemsBase,
   ];

@@ -98,6 +98,77 @@ export function searchProducts(products: Product[], query: string): Product[] {
   return products.filter((p) => productMatchesQuery(p, query));
 }
 
+// ─── Numerieke bucket-facetten ────────────────────────────────────────────────
+// Numerieke eigenschappen (geluid, breedte, inhoud, vulgewicht, toeren) worden
+// als keuze-buckets aangeboden — net als bij grote witgoedshops. Een bucket
+// verschijnt alleen wanneer er producten in vallen, dus per categorie tonen
+// automatisch alleen de relevante groepen.
+
+export interface Bucket {
+  key: string;
+  label: string;
+  test: (n: number) => boolean;
+}
+
+export const NOISE_BUCKETS: Bucket[] = [
+  { key: 'noise-zeerstil', label: 'Zeer stil: 41 dB of stiller', test: (n) => n <= 41 },
+  { key: 'noise-stil', label: 'Stil: 42–43 dB', test: (n) => n >= 42 && n <= 43 },
+  { key: 'noise-normaal', label: 'Normaal: 44–45 dB', test: (n) => n >= 44 && n <= 45 },
+  { key: 'noise-luid', label: 'Luider: 46 dB of meer', test: (n) => n >= 46 },
+];
+
+export const WIDTH_BUCKETS: Bucket[] = [
+  { key: 'width-smal', label: 'Smal: tot 55 cm', test: (n) => n <= 55 },
+  { key: 'width-normaal', label: 'Normaal: 56–65 cm', test: (n) => n >= 56 && n <= 65 },
+  { key: 'width-breed', label: 'Breed: 66 cm of meer', test: (n) => n >= 66 },
+];
+
+export const CAPACITY_BUCKETS: Bucket[] = [
+  { key: 'cap-s', label: 'Tot 250 liter', test: (n) => n < 250 },
+  { key: 'cap-m', label: '250 – 350 liter', test: (n) => n >= 250 && n < 350 },
+  { key: 'cap-l', label: '350 – 450 liter', test: (n) => n >= 350 && n < 450 },
+  { key: 'cap-xl', label: '450 liter of meer', test: (n) => n >= 450 },
+];
+
+export const LOAD_BUCKETS: Bucket[] = [
+  { key: 'load-7', label: 'Tot 7 kg', test: (n) => n <= 7 },
+  { key: 'load-8', label: '8 kg', test: (n) => n > 7 && n <= 8 },
+  { key: 'load-9', label: '9 kg', test: (n) => n > 8 && n <= 9 },
+  { key: 'load-10', label: '10 kg of meer', test: (n) => n > 9 },
+];
+
+export const SPIN_BUCKETS: Bucket[] = [
+  { key: 'spin-1200', label: 'Tot 1200 tpm', test: (n) => n <= 1200 },
+  { key: 'spin-1400', label: '1201 – 1400 tpm', test: (n) => n > 1200 && n <= 1400 },
+  { key: 'spin-1600', label: '1400 tpm of meer', test: (n) => n > 1400 },
+];
+
+/** Numerieke waarde van een product voor een bucket-dimensie (of null). */
+const BUCKET_VALUE = {
+  noise: (p: Product) => p.attributes.noise_db ?? null,
+  widths: (p: Product) => p.attributes.width_cm ?? null,
+  capacities: (p: Product) => p.attributes.capacity_total_l ?? null,
+  loads: (p: Product) => p.attributes.load_kg ?? null,
+  spins: (p: Product) => p.attributes.spin_rpm ?? null,
+} as const;
+
+const BUCKET_DEFS = {
+  noise: NOISE_BUCKETS,
+  widths: WIDTH_BUCKETS,
+  capacities: CAPACITY_BUCKETS,
+  loads: LOAD_BUCKETS,
+  spins: SPIN_BUCKETS,
+} as const;
+
+type BucketDim = keyof typeof BUCKET_DEFS;
+const BUCKET_DIMS = Object.keys(BUCKET_DEFS) as BucketDim[];
+
+function matchesBuckets(selected: string[], n: number | null, buckets: Bucket[]): boolean {
+  if (!selected.length) return true;
+  if (n == null) return false;
+  return buckets.some((b) => selected.includes(b.key) && b.test(n));
+}
+
 // ─── Filter state ────────────────────────────────────────────────────────────
 
 export interface FilterState {
@@ -107,6 +178,12 @@ export interface FilterState {
   colors: string[];
   types: string[];
   buildTypes: string[];
+  couverts: string[];
+  noise: string[];
+  widths: string[];
+  capacities: string[];
+  loads: string[];
+  spins: string[];
   priceMin: number | null;
   priceMax: number | null;
   noFrost: boolean;
@@ -122,6 +199,12 @@ export const EMPTY_FILTERS: FilterState = {
   colors: [],
   types: [],
   buildTypes: [],
+  couverts: [],
+  noise: [],
+  widths: [],
+  capacities: [],
+  loads: [],
+  spins: [],
   priceMin: null,
   priceMax: null,
   noFrost: false,
@@ -139,6 +222,11 @@ export function applyFilters(products: Product[], f: FilterState): Product[] {
     if (f.types.length && !(p.attributes.type && f.types.includes(p.attributes.type))) return false;
     if (f.buildTypes.length && !(p.attributes.build_type && f.buildTypes.includes(p.attributes.build_type)))
       return false;
+    if (f.couverts.length && !(p.attributes.couverts != null && f.couverts.includes(String(p.attributes.couverts))))
+      return false;
+    for (const dim of BUCKET_DIMS) {
+      if (!matchesBuckets(f[dim], BUCKET_VALUE[dim](p), BUCKET_DEFS[dim])) return false;
+    }
     if (f.priceMin != null && p.currentPrice < f.priceMin) return false;
     if (f.priceMax != null && p.currentPrice > f.priceMax) return false;
     if (f.noFrost && p.attributes.no_frost !== true) return false;
@@ -157,6 +245,12 @@ export function countActiveFilters(f: FilterState): number {
     f.colors.length +
     f.types.length +
     f.buildTypes.length +
+    f.couverts.length +
+    f.noise.length +
+    f.widths.length +
+    f.capacities.length +
+    f.loads.length +
+    f.spins.length +
     (f.priceMin != null || f.priceMax != null ? 1 : 0) +
     (f.noFrost ? 1 : 0) +
     (f.sameDay ? 1 : 0) +
@@ -180,12 +274,36 @@ export interface Facets {
   colors: FacetOption[];
   types: FacetOption[];
   buildTypes: FacetOption[];
+  couverts: FacetOption[];
+  noise: FacetOption[];
+  widths: FacetOption[];
+  capacities: FacetOption[];
+  loads: FacetOption[];
+  spins: FacetOption[];
   priceRange: { min: number; max: number } | null;
   noFrostCount: number;
   sameDayCount: number;
   onSaleCount: number;
   inStockCount: number;
   total: number;
+}
+
+/** Tel hoeveel producten in elke bucket vallen; lege buckets vallen weg. */
+function bucketFacets(
+  products: Product[],
+  getN: (p: Product) => number | null,
+  buckets: Bucket[]
+): FacetOption[] {
+  return buckets
+    .map((b) => ({
+      value: b.key,
+      label: b.label,
+      count: products.filter((p) => {
+        const n = getN(p);
+        return n != null && b.test(n);
+      }).length,
+    }))
+    .filter((o) => o.count > 0);
 }
 
 function tally(values: (string | undefined | null)[], labeller?: (v: string) => string): FacetOption[] {
@@ -218,6 +336,15 @@ export function computeFacets(products: Product[]): Facets {
       products.map((p) => p.attributes.build_type),
       (v) => v.charAt(0).toUpperCase() + v.slice(1)
     ),
+    couverts: tally(
+      products.map((p) => (p.attributes.couverts != null ? String(p.attributes.couverts) : undefined)),
+      (v) => `${v} couverts`
+    ).sort((a, b) => Number(b.value) - Number(a.value)),
+    noise: bucketFacets(products, (p) => p.attributes.noise_db ?? null, NOISE_BUCKETS),
+    widths: bucketFacets(products, (p) => p.attributes.width_cm ?? null, WIDTH_BUCKETS),
+    capacities: bucketFacets(products, (p) => p.attributes.capacity_total_l ?? null, CAPACITY_BUCKETS),
+    loads: bucketFacets(products, (p) => p.attributes.load_kg ?? null, LOAD_BUCKETS),
+    spins: bucketFacets(products, (p) => p.attributes.spin_rpm ?? null, SPIN_BUCKETS),
     priceRange: prices.length
       ? { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) }
       : null,

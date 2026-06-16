@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { ensureAdminOrStaff } from './admin-guard';
+import { logAdminAction } from './admin-log';
 import { validateDiscountCode, type DiscountValidation } from './discount-codes';
 
 /**
@@ -61,6 +62,7 @@ export async function upsertDiscountCode(
     if (error) return { ok: false, error: dupOrMsg(error) };
   }
 
+  await logAdminAction({ action: id ? 'update' : 'create', entity: 'discount', entityId: id || code, label: code });
   revalidatePath('/admin/kortingscodes');
   return { ok: true };
 }
@@ -77,6 +79,7 @@ export async function toggleDiscountActive(
   }
   const { error } = await supabase.from('sbs_discount_codes').update({ is_active: active }).eq('id', id);
   if (error) return { ok: false, error: error.message };
+  await logAdminAction({ action: 'update', entity: 'discount', entityId: id, label: active ? 'Geactiveerd' : 'Gedeactiveerd' });
   revalidatePath('/admin/kortingscodes');
   return { ok: true };
 }
@@ -90,6 +93,7 @@ export async function deleteDiscountCode(id: string): Promise<{ ok: boolean; err
   }
   const { error } = await supabase.from('sbs_discount_codes').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
+  await logAdminAction({ action: 'delete', entity: 'discount', entityId: id });
   revalidatePath('/admin/kortingscodes');
   return { ok: true };
 }
