@@ -7,7 +7,7 @@ import { sendEmail } from './client';
  * idempotent logt (UNIQUE order_id+event_type) en verstuurt.
  *
  * Faalt stil — een mailprobleem mag NOOIT een bestelling of statuswijziging
- * blokkeren. Zonder RESEND_API_KEY wordt niets verzonden (status 'noop').
+ * blokkeren. Zonder Mailgun-config wordt niets verzonden (status 'noop').
  */
 export type OrderEmailEvent =
   | 'order_confirmation'
