@@ -1,9 +1,12 @@
 'use client';
 import Link from 'next/link';
-
+import { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle, Package, Wrench, RotateCcw } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
+import { PriceDisplay } from '@/components/product/PriceDisplay';
+import { EnergyLabel } from '@/components/product/EnergyLabel';
+import type { Product } from '@/types/product';
 
 const trustItems = [
   { icon: Wrench, text: 'Gratis installatie — altijd' },
@@ -12,7 +15,26 @@ const trustItems = [
   { icon: CheckCircle, text: '30 dagen retour' },
 ];
 
-export function HeroSection() {
+const ROTATE_MS = 4500;
+
+export function HeroSection({ products = [] }: { products?: Product[] }) {
+  const reduceMotion = useReducedMotion();
+  // Toon een handvol producten met een bruikbare foto; aanbiedingen eerst.
+  const slides = products
+    .filter((p) => p.images?.primary)
+    .sort((a, b) => Number(b.isOnSale) - Number(a.isOnSale))
+    .slice(0, 6);
+
+  const [index, setIndex] = useState(0);
+  const current = slides[index];
+
+  // Auto-roteren (uit bij reduced-motion of <2 slides).
+  useEffect(() => {
+    if (reduceMotion || slides.length < 2) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), ROTATE_MS);
+    return () => clearInterval(t);
+  }, [reduceMotion, slides.length]);
+
   return (
     <section className="relative bg-gradient-to-br from-primary via-[#0d2a5c] to-[#0B1F42] overflow-hidden">
       {/* Background pattern (decoratief — mag geen klikken opvangen) */}
@@ -79,57 +101,101 @@ export function HeroSection() {
             </div>
           </motion.div>
 
-          {/* Right: Product image */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
-            className="relative hidden lg:block"
-          >
-            <div className="relative aspect-[3/4] max-h-[520px] mx-auto">
-              <div className="absolute inset-0 bg-white/5 rounded-[20px] backdrop-blur-sm border border-white/10" />
-              <ImageWithFallback
-                src="https://sbsnl.nl/wp-content/uploads/2026/04/140117575794718_576x.webp"
-                fallbackSrc="https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=600&q=80"
-                alt="Samsung Bespoke Multidoor"
-                fill
-                sizes="40vw"
-                priority
-                className="object-contain p-6"
-              />
-            </div>
-
-            {/* Floating cards */}
+          {/* Right: Product carousel */}
+          {current && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="absolute -left-6 top-1/4 bg-white rounded-[12px] shadow-xl p-3 flex items-center gap-2.5 max-w-[180px]"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
+              className="relative hidden lg:block"
             >
-              <div className="w-8 h-8 bg-success/20 rounded-[8px] flex items-center justify-center shrink-0">
-                <Wrench size={16} className="text-success" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-foreground">Vandaag geïnstalleerd</p>
-                <p className="text-xs text-muted">Professioneel team</p>
-              </div>
-            </motion.div>
+              <div className="relative aspect-[3/4] max-h-[520px] mx-auto">
+                <div className="absolute inset-0 bg-white/5 rounded-[20px] backdrop-blur-sm border border-white/10" />
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.55 }}
-              className="absolute -right-4 bottom-1/4 bg-white rounded-[12px] shadow-xl p-3 flex items-center gap-2.5"
-            >
-              <div className="w-8 h-8 bg-accent/10 rounded-[8px] flex items-center justify-center shrink-0">
-                <span className="text-accent font-black text-sm">47%</span>
+                {/* Energielabel badge */}
+                <div className="absolute top-4 right-4 z-20">
+                  <EnergyLabel label={current.energyLabel} size="md" />
+                </div>
+
+                {/* Roterende productfoto (klikbaar) */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={current.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute inset-0"
+                  >
+                    <Link href={`/product/${current.slug}`} className="block w-full h-full" aria-label={current.shortName}>
+                      <ImageWithFallback
+                        src={current.images.primary}
+                        fallbackSrc={current.images.fallback}
+                        alt={current.shortName}
+                        fill
+                        sizes="40vw"
+                        priority
+                        className="object-contain p-6"
+                      />
+                    </Link>
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Navigatie-dots */}
+                {slides.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+                    {slides.map((s, i) => (
+                      <button
+                        key={s.id}
+                        onClick={() => setIndex(i)}
+                        aria-label={`Toon product ${i + 1}`}
+                        className={`h-1.5 rounded-full transition-all ${
+                          i === index ? 'w-5 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="text-xs font-bold text-foreground">Bespaard</p>
-                <p className="text-xs text-muted">Samsung Bespoke</p>
-              </div>
+
+              {/* Floating card: value prop (statisch) */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="absolute -left-6 top-[18%] bg-white rounded-[12px] shadow-xl p-3 flex items-center gap-2.5 max-w-[180px]"
+              >
+                <div className="w-8 h-8 bg-success/20 rounded-[8px] flex items-center justify-center shrink-0">
+                  <Wrench size={16} className="text-success" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground">Vandaag geïnstalleerd</p>
+                  <p className="text-xs text-muted">Professioneel team</p>
+                </div>
+              </motion.div>
+
+              {/* Floating card: huidig product (dynamisch) */}
+              <Link
+                href={`/product/${current.slug}`}
+                className="absolute -right-4 bottom-[14%] bg-white rounded-[12px] shadow-xl p-3 w-[200px] block hover:shadow-2xl transition-shadow"
+              >
+                <p className="text-[10px] font-bold text-muted uppercase tracking-wide">{current.brand}</p>
+                <p className="text-xs font-bold text-foreground leading-snug line-clamp-2 mb-1.5">
+                  {current.shortName}
+                </p>
+                <div className="flex items-end justify-between gap-2">
+                  <PriceDisplay
+                    currentPrice={current.currentPrice}
+                    originalPrice={current.originalPrice}
+                    size="sm"
+                  />
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-white shrink-0">
+                    <ArrowRight size={13} />
+                  </span>
+                </div>
+              </Link>
             </motion.div>
-          </motion.div>
+          )}
         </div>
       </div>
     </section>
