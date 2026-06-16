@@ -25,7 +25,7 @@ export async function getOnboardingStatus(): Promise<{ steps: OnboardingStep[]; 
     { key: 'products', label: 'Voeg je eerste product(en) toe', done: productCount > 0, href: '/admin/producten/nieuw' },
     { key: 'courier', label: 'Maak minimaal één bezorger aan', done: courierCount > 0, href: '/admin/accounts' },
     { key: 'mollie', label: 'Koppel Mollie voor online betalingen', done: !!process.env.MOLLIE_API_KEY, href: '/admin/help' },
-    { key: 'mail', label: 'Koppel e-mail (Mailgun) voor automatische mails', done: !!(process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN), href: '/admin/help' },
+    { key: 'mail', label: 'Koppel e-mail (Resend) voor automatische mails', done: !!process.env.RESEND_API_KEY, href: '/admin/help' },
   ];
 
   return { steps, complete: steps.every((s) => s.done) };
