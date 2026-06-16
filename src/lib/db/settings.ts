@@ -32,7 +32,7 @@ export const SETTINGS_DEFAULTS: StoreSettings = {
   company_city: '',
   company_country: 'Nederland',
   company_kvk: '',
-  company_btw: '',
+  company_btw: 'NL869225455B01',
   company_iban: '',
   invoice_footer: 'Bedankt voor je bestelling bij Smart Buy Store.',
   return_fee_large: '',
@@ -52,7 +52,10 @@ export const getStoreSettings = unstable_cache(
       if (error) throw error;
       const map: Record<string, string> = {};
       for (const row of data ?? []) {
-        if (row.value != null) map[row.key as string] = row.value as string;
+        // Lege waarden negeren: anders overschrijft een leeg DB-veld de default
+        // (bv. een nog niet ingevuld BTW-nummer zou het juiste nummer verbergen).
+        const value = row.value as string | null;
+        if (value != null && value.trim() !== '') map[row.key as string] = value;
       }
       return { ...SETTINGS_DEFAULTS, ...map } as StoreSettings;
     } catch (err) {

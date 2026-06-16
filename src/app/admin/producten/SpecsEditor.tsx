@@ -96,7 +96,8 @@ export function SpecsEditor({ defaultValue }: { defaultValue?: Record<string, st
         <div className="mt-3 border border-primary/30 bg-primary/5 rounded-[10px] p-3">
           <p className="text-xs text-muted mb-2">
             Plak hieronder de specificaties van een leverancier- of fabrikantsite (label en waarde mogen elk op
-            een eigen regel staan). Tussenkopjes en losse eenheden worden automatisch herkend.
+            een eigen regel staan). Tussenkopjes en losse eenheden worden automatisch herkend. Controleer daarna
+            de rijen even — bij een afwijkend bronformaat kun je ze hier nog bijschaven.
           </p>
           <textarea
             value={pasteText}
@@ -128,26 +129,52 @@ export function SpecsEditor({ defaultValue }: { defaultValue?: Record<string, st
 /** Losse eenheid-regels die aan de vorige regel geplakt worden ("7" + "kg" → "7 kg"). */
 const UNITS = new Set([
   'kg', 'g', 'tpm', 'rpm', 'w', 'kw', 'wh', 'kwh', 'db', 'db(a)', 'l', 'liter',
-  'cm', 'mm', 'm', '°c', 'min', 'minuten', 'uur', '%', 'couverts', 'programma’s', "programma's",
+  'cm', 'mm', 'm', 'm²', 'm³', '°c', 'min', 'minuten', 'uur', '%', 'bar',
+  'couverts', 'couvert', 'jaar', 'kwh/jaar', 'l/jaar', 'programma’s', "programma's",
 ]);
+
+/**
+ * Sectiekoppen uit leverancier-/fabrikant-dumps (groeperingstitels, geen echte
+ * label/waarde-paren). Ze worden vóór het koppelen verwijderd, zodat ze niet
+ * als waarde in de verkeerde kolom belanden en de hele tabel verschuiven.
+ * Alleen ondubbelzinnige groeptitels — echte labels als "Geluidsniveau" of
+ * "Kleur van het product" staan hier bewust NIET in.
+ */
+const SECTION_HEADINGS = new Set([
+  'algemeen', 'algemene informatie', 'design', 'design en uitvoering', 'uitvoering',
+  'gewicht en omvang', 'afmetingen', 'afmetingen en gewicht', 'maten', 'plaatsing',
+  'energie', 'energie en verbruik', 'verbruik', 'prestatie', 'prestaties',
+  'capaciteit en inhoud', 'inhoud', 'geluid', 'aansluiting', 'aansluitingen',
+  'functies', "programma's en functies", 'comfort', 'overig', 'overige',
+  'specificaties', 'productinformatie', 'kenmerken',
+]);
+
+function isHeading(line: string): boolean {
+  return SECTION_HEADINGS.has(line.toLowerCase().replace(/\s*:\s*$/, '').trim());
+}
 
 /** Regels die duidelijk een waarde zijn (en geen label/tussenkopje). */
 function isStrongValue(line: string): boolean {
-  if (/^(ja|nee)$/i.test(line)) return true;
-  if (/^\d/.test(line)) return true; // begint met cijfer: "7 kg", "1400 TPM", "2000"
-  if (/^[A-G]([+]{1,3})?$/.test(line)) return true; // energieklasse: A, B, C+++...
+  const l = line.trim();
+  if (/^(ja|nee|n\.?v\.?t\.?)$/i.test(l)) return true;
+  if (/^[+-]?\d/.test(l)) return true; // begint met cijfer: "7 kg", "178,7 cm", "1.400 tpm", "-18 °C"
+  if (/^[A-G]([+]{1,3})?$/.test(l)) return true; // energieklasse: A+++ … G
+  if (/^(SN|N|ST|T|SN-T|SN-ST|N-T|N-ST)$/i.test(l)) return true; // klimaatklasse
+  if (/^R\d{2,4}[a-z]?$/i.test(l)) return true; // koelmiddel: R600a, R134a
   return false;
 }
 
 /**
  * Parse een ruwe specs-dump naar [label, waarde]-paren.
- * Ondersteunt ook "Label: waarde" en tab-gescheiden regels.
+ * Ondersteunt "Label: waarde", tab-gescheiden regels én losse label/waarde-
+ * regels die elkaar afwisselen. Sectiekoppen worden weggefilterd.
  */
 function parseSpecsDump(raw: string): [string, string][] {
   const rawLines = raw.split('\n').map((l) => l.trim()).filter(Boolean);
 
   // Stap 1: regels met een expliciete scheiding (":" of tab) zijn al een paar.
   // Stap 2: losse eenheid-regels samenvoegen met de vorige regel.
+  // Stap 3: ondubbelzinnige sectiekoppen verwijderen.
   const lines: string[] = [];
   const pairs: [string, string][] = [];
   for (const line of rawLines) {
@@ -156,6 +183,7 @@ function parseSpecsDump(raw: string): [string, string][] {
       pairs.push([sep[1].trim(), sep[2].trim()]);
       continue;
     }
+    if (isHeading(line)) continue;
     if (lines.length > 0 && UNITS.has(line.toLowerCase())) {
       lines[lines.length - 1] += ` ${line}`;
     } else {
@@ -163,9 +191,9 @@ function parseSpecsDump(raw: string): [string, string][] {
     }
   }
 
-  // Stap 3: label/waarde-alternatie met tussenkopje-detectie:
+  // Stap 4: label/waarde-alternatie met tussenkopje-detectie:
   // als de "waarde" zelf geen sterke waarde is maar de regel erná wél,
-  // dan was de huidige regel een tussenkopje → overslaan.
+  // dan was de huidige regel een (onbekend) tussenkopje → overslaan.
   let i = 0;
   while (i < lines.length - 1) {
     const label = lines[i];
@@ -181,5 +209,12 @@ function parseSpecsDump(raw: string): [string, string][] {
     i += 2;
   }
 
-  return pairs.filter(([k, v]) => k && v);
+  // Stap 5: vangnet tegen omgedraaide paren. Een normaal paar heeft een
+  // beschrijvend label als sleutel; staat er juist een sterke waarde in de
+  // sleutel én een beschrijvende tekst in de waarde, dan zijn ze omgewisseld.
+  const corrected = pairs.map(([k, v]): [string, string] =>
+    isStrongValue(k) && !isStrongValue(v) ? [v, k] : [k, v]
+  );
+
+  return corrected.filter(([k, v]) => k && v);
 }

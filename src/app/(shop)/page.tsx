@@ -21,7 +21,7 @@ export default async function HomePage() {
       <HeroSection />
       <USPStrip />
       <DealsBanner products={products} />
-      <CategoryGrid />
+      <CategoryGrid products={products} />
       <ProductSection products={products} />
       <BrandScroller />
       <TrustSection />

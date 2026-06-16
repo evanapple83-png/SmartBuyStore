@@ -2,9 +2,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { categories } from '@/data/categories';
+import type { Product } from '@/types/product';
 
-export function CategoryGrid() {
-  const [featured, ...rest] = categories;
+/**
+ * Toont per categorie de foto van een écht product uit die categorie, zodat
+ * de tegel klopt met wat eronder staat. Valt terug op de gecureerde
+ * stockfoto in categories.ts als de categorie (nog) geen producten heeft.
+ */
+function buildImageMap(products: Product[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const p of products) {
+    if (!map[p.category] && p.images?.primary) map[p.category] = p.images.primary;
+  }
+  return map;
+}
+
+export function CategoryGrid({ products = [] }: { products?: Product[] }) {
+  const imageByCategory = buildImageMap(products);
+  const withImages = categories.map((c) => ({ ...c, image: imageByCategory[c.slug] || c.image }));
+  const [featured, ...rest] = withImages;
 
   return (
     <section className="py-12 bg-surface">

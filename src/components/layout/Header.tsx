@@ -29,7 +29,7 @@ export function Header({ phone }: { phone?: string }) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0 cursor-pointer">
             <span className="text-xl font-display font-black text-primary tracking-tight">
-              Smart<span className="text-accent">Buy</span>
+              Smartbuy<span className="text-accent">store</span>
             </span>
             <span className="hidden sm:block text-xs font-semibold text-muted border-l border-border pl-2">
               Witgoed Specialist

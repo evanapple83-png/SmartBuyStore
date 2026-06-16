@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { Mail, MapPin, CreditCard, Phone } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import { getStoreSettings } from '@/lib/db/settings';
+import { PaymentIcons } from './PaymentIcons';
 
 const winkelLinks = [
   { href: '/categorie/koelkasten', label: 'Koelkasten' },
@@ -124,17 +125,7 @@ export async function Footer() {
             © 2026 Smart Buy Store V.O.F. — KvK {settings.company_kvk || '42000760'}
             {settings.company_btw && ` — BTW ${settings.company_btw}`} — Alle rechten voorbehouden
           </p>
-          <div className="flex items-center gap-2 flex-wrap justify-center">
-            <CreditCard size={14} className="text-white/40" />
-            {paymentMethods.map((method) => (
-              <span
-                key={method}
-                className="text-xs bg-white/10 text-white/70 px-2 py-0.5 rounded"
-              >
-                {method}
-              </span>
-            ))}
-          </div>
+          <PaymentIcons methods={paymentMethods} />
         </div>
       </div>
     </footer>

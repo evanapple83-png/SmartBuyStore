@@ -9,7 +9,7 @@ import { BrochureUpload } from './BrochureUpload';
 import { SpecsEditor } from './SpecsEditor';
 import { PriceMarginFields } from './PriceMarginFields';
 
-const ENERGY_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
+const ENERGY_LABELS = ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E'] as const;
 
 type Props = {
   mode: 'create' | 'edit';

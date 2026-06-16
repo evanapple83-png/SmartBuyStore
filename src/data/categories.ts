@@ -35,7 +35,7 @@ export const categories = [
     slug: 'drogers',
     name: 'Drogers',
     description: 'Condensdrogers, warmtepompdrogers',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=600&q=80',
     icon: 'dryer',
     productCount: 0,
   },

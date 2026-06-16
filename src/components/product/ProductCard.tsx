@@ -57,26 +57,26 @@ export function ProductCard({ product, onAddToCart, onToggleWishlist, isInWishli
           className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
         />
 
-        {/* Badges top-left */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
+        {/* Badges top-left — compact zodat ze de productfoto niet overheersen */}
+        <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
           {product.isNew && (
-            <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-pill">
-              NIEUW
+            <span className="bg-primary text-white text-[10px] font-bold leading-none px-1.5 py-1 rounded-pill">
+              Nieuw
             </span>
           )}
           {product.isOnSale && (
-            <span className="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-pill">
-              SALE
+            <span className="bg-accent text-white text-[10px] font-bold leading-none px-1.5 py-1 rounded-pill">
+              Sale
             </span>
           )}
           {product.cashbackAmount != null && product.cashbackAmount > 0 && (
-            <span className="bg-success text-white text-xs font-bold px-2 py-0.5 rounded-pill shadow-md shadow-success/30">
-              € {formatPriceShort(product.cashbackAmount)} CASHBACK
+            <span className="bg-success text-white text-[10px] font-bold leading-none px-1.5 py-1 rounded-pill shadow-sm shadow-success/30">
+              € {formatPriceShort(product.cashbackAmount)} cashback
             </span>
           )}
           {product.warrantyLabel && (
-            <span className="inline-flex items-center gap-1 bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-pill">
-              <ShieldCheck size={11} /> {product.warrantyLabel.toUpperCase()}
+            <span className="inline-flex items-center gap-1 bg-primary text-white text-[10px] font-bold leading-none px-1.5 py-1 rounded-pill">
+              <ShieldCheck size={10} /> {product.warrantyLabel}
             </span>
           )}
         </div>

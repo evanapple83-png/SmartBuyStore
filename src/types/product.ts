@@ -1,5 +1,5 @@
 export type Category = 'koelkasten' | 'wasmachines' | 'vaatwassers' | 'koken' | 'drogers';
-export type EnergyLabel = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+export type EnergyLabel = 'A+++' | 'A++' | 'A+' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
 /**
  * Genormaliseerde, getypeerde filterfacetten (DB-kolom `attributes`, JSONB).

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Truck, Wrench, Recycle, PackageCheck, Building2, ArrowRight, Check, Clock,
-  WashingMachine, Refrigerator, CookingPot, AirVent,
+  WashingMachine, Refrigerator, CookingPot, AirVent, Coins, Info,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -45,6 +45,7 @@ const categories: Cat[] = [
     title: 'Amerikaanse koelkasten',
     accent: true,
     rules: [
+      'Bezorging én installatie van een Amerikaanse koelkast: € 75 (vanwege gewicht, afmeting en extra handling).',
       'Vanwege gewicht en afmeting bezorgen en plaatsen we deze uitsluitend op de begane grond.',
       'Een water-/ijsaansluiting sluiten we alleen aan als er op de plek al een tappunt aanwezig is.',
       'Controleer vooraf of het apparaat door deuren, gangen en trappenhuis past.',
@@ -73,6 +74,19 @@ const categories: Cat[] = [
       'De nis of uitsparing moet op maat en voorbereid zijn.',
       'Een oud inbouwapparaat bouwen we uit en nemen we mee. Afzuigkappen met buitenafvoer vragen een bestaand afvoerkanaal.',
     ],
+  },
+];
+
+const surcharges = [
+  {
+    title: 'Woning met trekschakelaar',
+    price: '+ € 25',
+    text: 'Woningen met een trekschakelaar vragen extra specialisme om veilig aan te sluiten. Daarvoor rekenen we eenmalig € 25 bovenop de gratis installatie.',
+  },
+  {
+    title: 'Amerikaanse koelkast',
+    price: '€ 75',
+    text: 'Bezorging én installatie van een Amerikaanse koelkast kost € 75, vanwege het gewicht, de afmeting en de extra handling. Plaatsing uitsluitend op de begane grond.',
   },
 ];
 
@@ -106,7 +120,7 @@ export default function BezorgingPage() {
               <div className="max-w-xl text-white">
                 <div className="inline-flex items-center gap-2 mb-5">
                   <span className="text-2xl font-display font-black tracking-tight">
-                    Smart<span className="text-accent">Buy</span> Store
+                    Smartbuy<span className="text-accent">store</span>
                   </span>
                   <span className="text-[11px] font-semibold bg-white/15 border border-white/25 rounded-full px-2.5 py-0.5">
                     Installatieservice
@@ -162,6 +176,37 @@ export default function BezorgingPage() {
             <strong>Tot en met de 4e verdieping</strong> bezorgen en plaatsen we zonder gedoe. Woon je hoger of is er
             geen (passende) lift? <Link href="/contact" className="text-primary underline hover:no-underline">Neem vooraf even contact op</Link> —
             dan bekijken we samen de mogelijkheden. <strong>Amerikaanse koelkasten</strong> plaatsen we uitsluitend op de begane grond.
+          </p>
+        </section>
+
+        {/* ── Meerkosten in bepaalde situaties ── */}
+        <section className="mb-12">
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-2xl font-display font-extrabold text-foreground">Wanneer rekenen we wél kosten?</h2>
+          </div>
+          <p className="text-sm text-muted mb-6">
+            Onze bezorging en installatie zijn standaard gratis. In twee specifieke situaties vragen we vooraf een
+            duidelijke meerprijs — geen verrassingen achteraf.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {surcharges.map((s) => (
+              <div key={s.title} className="rounded-[14px] border border-accent/30 bg-accent/[0.03] p-5">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-[10px] bg-accent/10 flex items-center justify-center shrink-0">
+                      <Coins size={20} className="text-accent" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground">{s.title}</h3>
+                  </div>
+                  <span className="text-sm font-display font-black text-accent whitespace-nowrap">{s.price}</span>
+                </div>
+                <p className="text-xs text-foreground/80 leading-relaxed">{s.text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 flex items-start gap-2 text-xs text-muted">
+            <Info size={14} className="shrink-0 mt-0.5" />
+            <span>Twijfel je of een van deze situaties op jou van toepassing is? Neem gerust vooraf even contact op, dan rekenen we het samen door.</span>
           </p>
         </section>
 
