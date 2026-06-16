@@ -40,7 +40,7 @@ export async function Footer() {
           {/* Column 1 — Brand */}
           <div>
             <div className="text-xl font-display font-black mb-3">
-              Smart<span className="text-accent">Buy</span> Store
+              Smartbuy<span className="text-accent">store</span>
             </div>
             <p className="text-white/70 text-sm leading-relaxed mb-4">
               Uw witgoed specialist voor snelle bezorging, gratis installatie en afvoer van uw oude apparaat. Lokaal team, directe service.
