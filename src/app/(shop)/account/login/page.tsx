@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LoginForm } from './LoginForm';
+import { safeRedirectPath } from '@/lib/utils';
 
 export const metadata = {
   title: 'Inloggen · Smart Buy Store',
@@ -18,7 +19,7 @@ export default function LoginPage({
           Log in met je e-mailadres en wachtwoord.
         </p>
 
-        <LoginForm redirectTo={searchParams.redirect || '/account'} />
+        <LoginForm redirectTo={safeRedirectPath(searchParams.redirect, '/account')} />
 
         <div className="mt-6 pt-6 border-t border-border text-sm text-center space-y-2">
           <div>

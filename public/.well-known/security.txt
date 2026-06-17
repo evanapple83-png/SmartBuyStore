@@ -1,0 +1,4 @@
+Contact: mailto:info@smartbuystore.nl
+Expires: 2027-06-17T00:00:00.000Z
+Preferred-Languages: nl, en
+Canonical: https://smartbuystore.nl/.well-known/security.txt
